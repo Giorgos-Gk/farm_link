@@ -1,0 +1,44 @@
+import 'package:farm_link/config/pallete.dart';
+import 'package:farm_link/widgets/chat_app_bar.dart';
+import 'package:farm_link/widgets/chat_list_widget.dart';
+import 'package:farm_link/widgets/conversation_bottom.dart';
+import 'package:farm_link/widgets/input_widget.dart';
+import 'package:flutter/material.dart';
+
+class ConversationPage extends StatefulWidget {
+  @override
+  _ConversationPageState createState() => _ConversationPageState();
+
+  const ConversationPage();
+}
+
+class _ConversationPageState extends State<ConversationPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+        child: Scaffold(
+            key: _scaffoldKey,
+            appBar: ChatAppBar(), // Custom app bar for chat screen
+            body: Container(
+                color: Palette.chatBackgroundColor,
+                child: Stack(children: <Widget>[
+                  Column(
+                    children: <Widget>[
+                      ChatListWidget(),
+                      GestureDetector(
+                          child: InputWidget(),
+                          onPanUpdate: (details) {
+                            if (details.delta.dy < 0) {
+                              _scaffoldKey.currentState
+                                  ?.showBottomSheet((BuildContext context) {
+                                return ConversationBottom();
+                              });
+                            }
+                          })
+                    ],
+                  ),
+                ]))));
+  }
+}
