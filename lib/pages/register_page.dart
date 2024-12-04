@@ -5,7 +5,6 @@ import 'package:farm_link/config/pallete.dart';
 import 'package:farm_link/pages/conversation_page_slide.dart';
 import 'package:farm_link/widgets/circle_indicator.dart';
 import 'package:flutter/material.dart';
-import 'package:numberpicker/numberpicker.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -137,7 +136,14 @@ class _RegisterPageState extends State<RegisterPage>
         ),
         const SizedBox(height: 100),
         TextButton.icon(
-          onPressed: () => updatePageState(1),
+          onPressed: () {
+            pageController.animateToPage(
+              1,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+            updatePageState(1);
+          },
           icon: Image.asset(Assets.googleButton, height: 25),
           label: Text(
             'Sign In with Google',
@@ -172,21 +178,6 @@ class _RegisterPageState extends State<RegisterPage>
                 ),
               ],
             ),
-          ),
-          SizedBox(height: ageAnimation.value),
-          Text('How old are you?', style: Styles.questionLight),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              NumberPicker(
-                value: age,
-                minValue: 15,
-                maxValue: 100,
-                axis: Axis.horizontal,
-                onChanged: (value) => setState(() => age = value),
-              ),
-              Text('Years', style: Styles.textLight),
-            ],
           ),
           SizedBox(height: usernameAnimation.value),
           Text('Choose a username', style: Styles.questionLight),
