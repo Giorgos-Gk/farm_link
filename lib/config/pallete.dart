@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Palette {
-  static Color primaryColor = Colors.white;
+  static Color primaryColor = Colors.black;
   static const Color accentColor = Color(0xff4caf50);
   static Color gradientStartColor = accentColor;
   static const Color gradientEndColor = Color(0xff388e3c);
