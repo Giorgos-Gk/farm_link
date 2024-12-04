@@ -1,8 +1,6 @@
 import 'package:farm_link/config/pallete.dart';
 import 'package:farm_link/widgets/chat_app_bar.dart';
 import 'package:farm_link/widgets/chat_list_widget.dart';
-import 'package:farm_link/widgets/conversation_bottom.dart';
-import 'package:farm_link/widgets/input_widget.dart';
 import 'package:flutter/material.dart';
 
 class ConversationPage extends StatefulWidget {
@@ -27,16 +25,6 @@ class _ConversationPageState extends State<ConversationPage> {
                   Column(
                     children: <Widget>[
                       ChatListWidget(),
-                      GestureDetector(
-                          child: InputWidget(),
-                          onPanUpdate: (details) {
-                            if (details.delta.dy < 0) {
-                              _scaffoldKey.currentState
-                                  ?.showBottomSheet((BuildContext context) {
-                                return ConversationBottom();
-                              });
-                            }
-                          })
                     ],
                   ),
                 ]))));
