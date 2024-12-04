@@ -125,7 +125,7 @@ class _RegisterPageState extends State<RegisterPage>
     return Column(
       children: [
         const SizedBox(height: 250),
-        Image.asset(Assets.appIconFg, height: 100),
+        Image.asset(Assets.appIcon, height: 100),
         const SizedBox(height: 30),
         Text(
           'Welcome to Farm Link',
