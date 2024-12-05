@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.17.0 <3.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -41,7 +41,7 @@ dependencies:
   cloud_firestore: ^5.5.0
   image_picker: ^1.1.2
   firebase_storage: ^12.3.6
-  flutter_launcher_icons: ^0.14.1
+  flutter_launcher_icons: ^0.14.2
   shared_preferences: ^2.0.0
   file_picker: ^5.2.3
   rubber: ^1.1.0
@@ -51,7 +51,7 @@ dependencies:
 flutter_launcher_icons:
   android: true
   image_path_android: "assets/logo.png"
-  adaptive_icon_background: "assets/background.jpg"
+  adaptive_icon_background: "assets/background.png"
   adaptive_icon_foreground: "assets/logo.png"
 
 
@@ -85,7 +85,7 @@ flutter:
   assets:
     - assets/google.png
     - assets/logo.png
-    - assets/background.jpg
+    - assets/background.png
     - assets/placeholder.png
     - assets/user.png
     - assets/social.png
