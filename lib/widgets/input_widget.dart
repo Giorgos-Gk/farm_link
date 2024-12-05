@@ -10,33 +10,20 @@ class InputWidget extends StatelessWidget {
     return Container(
       child: Row(
         children: <Widget>[
-          Material(
-            child: new Container(
-              margin: new EdgeInsets.symmetric(horizontal: 1.0),
-              child: new IconButton(
-                icon: new Icon(Icons.face_5_outlined),
-                onPressed: () {},
-                color: Palette.primaryColor,
-              ),
-            ),
-            color: Colors.white,
-          ),
-
           // Text input
           Flexible(
             child: Container(
               child: TextField(
                 style: TextStyle(color: Palette.primaryColor, fontSize: 15.0),
                 controller: textEditingController,
-                decoration: InputDecoration.collapsed(
-                  hintText: 'Type a message',
+                decoration: InputDecoration(
+                  hintText: 'Γράψτε εδω...',
                   hintStyle: TextStyle(color: Palette.greyColor),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
                 ),
               ),
             ),
           ),
-
-          // Send Message Button
           Material(
             child: new Container(
               margin: new EdgeInsets.symmetric(horizontal: 8.0),

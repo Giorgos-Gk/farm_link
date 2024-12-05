@@ -127,7 +127,7 @@ class _RegisterPageState extends State<RegisterPage>
         Image.asset(Assets.appIcon, height: 100),
         const SizedBox(height: 30),
         Text(
-          'Welcome to Farm Link',
+          'Καλώς ήρθατε στο Farm Link',
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -146,7 +146,7 @@ class _RegisterPageState extends State<RegisterPage>
           },
           icon: Image.asset(Assets.googleButton, height: 25),
           label: Text(
-            'Sign In with Google',
+            'Συνεχίστε με Google',
             style: TextStyle(
               color: Palette.primaryTextColorLight,
               fontWeight: FontWeight.w800,
@@ -180,7 +180,8 @@ class _RegisterPageState extends State<RegisterPage>
             ),
           ),
           SizedBox(height: usernameAnimation.value),
-          Text('Choose a username', style: Styles.questionLight),
+          Text('Εισάγετε την αγροτική σας ειδικότητα:',
+              style: Styles.questionLight),
           const SizedBox(height: 20),
           Container(
             width: 120,
@@ -188,7 +189,7 @@ class _RegisterPageState extends State<RegisterPage>
               focusNode: usernameFocusNode,
               textAlign: TextAlign.center,
               decoration: InputDecoration(
-                hintText: '@username',
+                hintText: 'Ειδικότητα',
                 border: OutlineInputBorder(
                   borderSide:
                       BorderSide(color: Palette.primaryColor, width: 0.1),

@@ -78,7 +78,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                         CrossAxisAlignment.center,
                                     children: <Widget>[
                                       Text(
-                                        'Photos',
+                                        'Φωτογραφίες',
                                         style: textStyle,
                                       ),
                                       VerticalDivider(
@@ -86,14 +86,14 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                         color: Palette.primaryTextColor,
                                       ),
                                       Text(
-                                        'Videos',
+                                        'Βιντεο',
                                         style: textStyle,
                                       ),
                                       VerticalDivider(
                                         width: 30,
                                         color: Palette.primaryTextColor,
                                       ),
-                                      Text('Files', style: textStyle)
+                                      Text('Αρχεία', style: textStyle)
                                     ],
                                   ))),
                         ],
