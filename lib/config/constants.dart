@@ -4,7 +4,7 @@ class Constants {
   static const sessionUsername = 'sessionUsername';
   static const sessionName = 'sessionName';
   static const sessionProfilePictureUrl = 'sessionProfilePictureUrl';
-
+  static const String profileImagePath = 'profile_images/';
   static const configDarkMode = 'configDarkMode';
   static const configMessagePeek = 'configMessagePeek';
   static const configMessagePaging = 'configMessagePaging';

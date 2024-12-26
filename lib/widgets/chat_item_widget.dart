@@ -27,8 +27,7 @@ class ChatItemWidget extends StatelessWidget {
               margin: EdgeInsets.only(right: 10.0),
             )
           ],
-          mainAxisAlignment:
-              MainAxisAlignment.end, // aligns the chatitem to right end
+          mainAxisAlignment: MainAxisAlignment.end,
         ),
         Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
           Container(
@@ -45,7 +44,6 @@ class ChatItemWidget extends StatelessWidget {
         ])
       ]));
     } else {
-      // This is a received message
       return Container(
         child: Column(
           children: <Widget>[

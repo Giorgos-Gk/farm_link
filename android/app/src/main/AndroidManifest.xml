@@ -3,6 +3,23 @@
         android:label="Farm Link"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+     <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+    
+    <meta-data
+    android:name="io.flutter.embedding.engine.renderer"
+    android:value="skia" />
+
+    <meta-data
+    android:name="com.google.firebase.auth.api.gms.license"
+    android:value="true" />
+
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@mipmap/ic_launcher" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

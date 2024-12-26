@@ -18,7 +18,7 @@ class _ConversationPageState extends State<ConversationPage> {
     return SafeArea(
         child: Scaffold(
             key: _scaffoldKey,
-            appBar: ChatAppBar(), // Custom app bar for chat screen
+            appBar: ChatAppBar(),
             body: Container(
                 color: Palette.chatBackgroundColor,
                 child: Stack(children: <Widget>[

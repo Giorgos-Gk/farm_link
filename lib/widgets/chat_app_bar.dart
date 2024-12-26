@@ -9,16 +9,12 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    var textHeading = TextStyle(
-        color: Palette.primaryTextColor,
-        fontSize: 20); // Text style for the name
-    var textStyle = TextStyle(
-        color: Palette.secondaryTextColor); // Text style for everything else
+    var textHeading = TextStyle(color: Palette.primaryTextColor, fontSize: 20);
+    var textStyle = TextStyle(color: Palette.secondaryTextColor);
 
     return Material(
         child: Container(
             decoration: new BoxDecoration(boxShadow: [
-              //adds a shadow to the appbar
               new BoxShadow(
                 color: Colors.black,
                 blurRadius: 5.0,
@@ -29,7 +25,6 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 color: Palette.primaryBackgroundColor,
                 child: Row(children: <Widget>[
                   Expanded(
-                      //we're dividing the appbar into 7 : 3 ratio. 7 is for content and 3 is for the display picture.
                       flex: 7,
                       child: Center(
                           child: Column(
@@ -67,7 +62,6 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                       ))),
                                 ],
                               ))),
-                          //second row containing the buttons for media
                           Expanded(
                               flex: 3,
                               child: Container(
@@ -98,7 +92,6 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   ))),
                         ],
                       ))),
-                  //This is the display picture
                   Expanded(
                       flex: 3,
                       child: Container(

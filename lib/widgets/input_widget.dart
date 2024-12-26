@@ -10,7 +10,6 @@ class InputWidget extends StatelessWidget {
     return Container(
       child: Row(
         children: <Widget>[
-          // Text input
           Flexible(
             child: Container(
               child: TextField(

@@ -2,8 +2,8 @@ import 'package:farm_link/config/pallete.dart';
 import 'package:flutter/material.dart';
 
 class Styles {
-  static TextStyle textHeading = TextStyle(
-      color: Palette.primaryTextColor, fontSize: 20); // Text style for the name
+  static TextStyle textHeading =
+      TextStyle(color: Palette.primaryTextColor, fontSize: 20);
 
   static TextStyle numberPickerHeading =
       TextStyle(fontSize: 30, color: Palette.primaryTextColorLight);
