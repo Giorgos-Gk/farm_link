@@ -3,6 +3,7 @@ import 'package:farm_link/bloc/authentication/auth_bloc.dart';
 import 'package:farm_link/bloc/authentication/auth_event.dart';
 import 'package:farm_link/bloc/authentication/auth_state.dart';
 import 'package:farm_link/controllers/emai_password_controllers.dart';
+import 'package:farm_link/pages/contact_list_page.dart';
 import 'package:farm_link/view/home_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,7 +22,7 @@ class _LoginViewState extends State<LoginView> {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         if (state is AuthStateLoggedIn) {
-          return HomeView();
+          return ContactListPage();
         }
         if (state is AuthStateLoggedOut) {
           return Scaffold(

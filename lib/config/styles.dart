@@ -25,4 +25,9 @@ class Styles {
   static TextStyle subText = TextStyle(color: Palette.greyColor);
   static TextStyle date = TextStyle(
       color: Palette.greyColor, fontSize: 12.0, fontStyle: FontStyle.normal);
+  static TextStyle appBarTitle = TextStyle(
+    color: Palette.primaryTextColor,
+    fontWeight: FontWeight.bold,
+    fontSize: 20.0,
+  );
 }

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:farm_link/bloc/authentication/auth_bloc.dart';
 import 'package:farm_link/bloc/authentication/auth_event.dart';
 import 'package:farm_link/bloc/authentication/auth_state.dart';
+import 'package:farm_link/pages/contact_list_page.dart';
 import 'package:farm_link/view/home_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -46,7 +47,7 @@ class _RegisterViewState extends State<RegisterView> {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         if (state is AuthStateLoggedIn) {
-          return HomeView();
+          return ContactListPage();
         }
 
         if (state is AuthStateLoggedOut) {
@@ -161,7 +162,7 @@ class _RegisterViewState extends State<RegisterView> {
                                 focusedBorder: const UnderlineInputBorder(
                                   borderSide: BorderSide(color: Colors.green),
                                 ),
-                                hintText: 'Όνομα χρήστη',
+                                hintText: 'Ειδικότητα',
                                 hintStyle:
                                     TextStyle(color: Colors.grey.shade500),
                                 enabledBorder: UnderlineInputBorder(

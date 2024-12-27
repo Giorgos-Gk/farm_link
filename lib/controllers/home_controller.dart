@@ -1,8 +1,8 @@
 import 'package:farm_link/auth/auth.dart';
 import 'package:farm_link/bloc/authentication/auth_bloc.dart';
 import 'package:farm_link/bloc/authentication/auth_state.dart';
+import 'package:farm_link/pages/contact_list_page.dart';
 import 'package:farm_link/view/home_view.dart';
-import 'package:farm_link/view/welcome_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -20,7 +20,7 @@ class ScreenController extends StatelessWidget {
               return HomeView();
             }
             if (state is AuthStateLoggedOut) {
-              return WelcomeView();
+              return ContactListPage();
             } else {
               return Container();
             }
