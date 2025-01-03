@@ -12,9 +12,10 @@ class AuthenticationRepository {
   AuthenticationRepository({
     FirebaseAuth? auth,
     FirebaseStorage? storage,
-    required this.authenticationProvider,
+    AuthenticationProvider? provider,
   })  : firebaseAuth = auth ?? FirebaseAuth.instance,
-        firebaseStorage = storage ?? FirebaseStorage.instance;
+        firebaseStorage = storage ?? FirebaseStorage.instance,
+        authenticationProvider = provider ?? AuthenticationProvider();
 
   Future<void> updateUserProfile({
     required String username,

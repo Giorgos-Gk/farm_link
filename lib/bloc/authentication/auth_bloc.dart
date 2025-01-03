@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
+import '../../config/contacts.dart';
+import '../../utils/shared_objects.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -22,10 +24,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         const AuthStateLoggedOut(isLoading: true, successful: true, error: ''),
       );
       try {
-        await _auth.signInWithEmailAndPassword(
+        final userCredential = await _auth.signInWithEmailAndPassword(
           email: event.email,
           password: event.password,
         );
+        final user = userCredential.user;
+
+        if (user == null) {
+          throw Exception('User is null after signIn');
+        }
+        await SharedObjects.prefs.setString(Constants.sessionUid, user.uid);
+        emit(const AuthStateLoggedIn(isLoading: false, successful: true));
         emit(
           const AuthStateLoggedIn(isLoading: false, successful: true),
         );
@@ -60,11 +69,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           email: event.email,
           password: event.password,
         );
-
         final user = userCredential.user;
         if (user == null) {
           throw Exception('User creation failed');
         }
+
+        await SharedObjects.prefs.setString(Constants.sessionUid, user.uid);
 
         String? imageUrl;
         if (event.image != null) {
@@ -90,30 +100,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
 
         emit(const AuthStateLoggedIn(isLoading: false, successful: true));
-      } catch (e) {
-        emit(
-          AuthStateLoggedOut(
-            isLoading: false,
-            successful: false,
-            error: e.toString(),
-          ),
-        );
-      }
-    });
-
-    on<AuthEventResetPassword>((event, emit) async {
-      emit(
-        const AuthStateLoggedOut(isLoading: true, successful: true, error: ''),
-      );
-      try {
-        await _auth.sendPasswordResetEmail(email: event.email);
-        emit(
-          const AuthStateResetPassword(
-            message: "Password reset email sent successfully.",
-            isLoading: false,
-            successful: true,
-          ),
-        );
       } catch (e) {
         emit(
           AuthStateLoggedOut(
@@ -151,11 +137,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final docRef = FirebaseFirestore.instance.collection('users').doc(userId);
 
       await docRef.set({
+        'uid': userId,
         'username': username,
         'email': email,
         'image_url': imageUrl ?? '',
+        'contacts': [],
         'created_at': FieldValue.serverTimestamp(),
-      });
+      }, SetOptions(merge: true));
     } catch (e) {
       throw Exception('Failed to store user data in Firestore: $e');
     }

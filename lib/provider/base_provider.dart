@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:farm_link/models/contact.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:farm_link/models/chat.dart';
 import 'package:farm_link/models/message.dart';
@@ -21,6 +22,8 @@ abstract class BaseUserDataProvider extends BaseProvider {
   Future<FarmLinkUser> saveProfileDetails(
       String profileImageUrl, String username);
   Future<bool> isProfileComplete();
+  Future<List<Contact>> getContacts();
+  Future<void> addContact(String username);
   Future<void> updateProfilePicture(String profilePictureUrl);
 }
 

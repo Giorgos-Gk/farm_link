@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class Styles {
   static TextStyle textHeading =
       TextStyle(color: Palette.primaryTextColor, fontSize: 20);
-
+  static TextStyle hintText = TextStyle(color: Palette.hintTextColor);
   static TextStyle numberPickerHeading =
       TextStyle(fontSize: 30, color: Palette.primaryTextColorLight);
   static TextStyle textHeadingLight =

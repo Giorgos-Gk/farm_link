@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class Palette {
+  static Color hintTextColor = Colors.black54;
+  static Color hintTextColorLight = Colors.white70;
   static Color primaryColor = Colors.black;
   static const Color accentColor = Color(0xff4caf50);
   static Color gradientStartColor = accentColor;

@@ -1,12 +1,13 @@
+import 'package:farm_link/config/pallete.dart';
 import 'package:flutter/material.dart';
-import '../config/pallete.dart';
+import '../models/contact.dart';
 
 class ContactRowWidget extends StatelessWidget {
   const ContactRowWidget({
     Key? key,
-    required this.name,
+    required this.contact,
   }) : super(key: key);
-  final String name;
+  final Contact contact;
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +22,9 @@ class ContactRowWidget extends StatelessWidget {
                   color: Colors.black,
                 ),
                 children: <TextSpan>[
-                  TextSpan(text: "${name.toString().split(' ')[0]} "),
+                  TextSpan(text: contact.getFirstName()),
                   TextSpan(
-                      text: name.toString().split(' ')[1],
+                      text: ' ' + contact.getLastName(),
                       style: TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),

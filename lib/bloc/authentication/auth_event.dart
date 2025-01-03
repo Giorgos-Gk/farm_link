@@ -1,5 +1,9 @@
 import 'dart:io';
 import 'package:equatable/equatable.dart';
+import 'package:farm_link/bloc/authentication/auth_state.dart';
+import 'package:farm_link/config/contacts.dart';
+import 'package:farm_link/utils/shared_objects.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 abstract class AuthEvent extends Equatable {
   @override
@@ -35,7 +39,10 @@ class AuthEventRegister extends AuthEvent {
   List<Object?> get props => [email, password, username, image];
 }
 
-class AuthEventCheckSession extends AuthEvent {}
+class AuthEventCheckSession extends AuthEvent {
+  final user = FirebaseAuth.instance.currentUser;
+  final cachedUid = SharedObjects.prefs.getString(Constants.sessionUid);
+}
 
 class AuthEventResetPassword extends AuthEvent {
   final String email;
