@@ -33,12 +33,12 @@ abstract class BaseStorageProvider extends BaseProvider {
 
 abstract class BaseChatProvider extends BaseProvider {
   Stream<List<Message>> getMessages(String chatId);
-  Future<List<Message>> getPreviousMessages(String chatId, Message prevMessage);
-  Future<List<Message>> getAttachments(String chatId, int type);
+  // Future<List<Message>> getPreviousMessages(String chatId, Message prevMessage);
+  // Future<List<Message>> getAttachments(String chatId, int type);
   Stream<List<Chat>> getChats();
   Future<void> sendMessage(String chatId, Message message);
-  Future<String> getChatIdByUsername(String username);
-  Future<void> createChatIdForContact(FarmLinkUser user);
+  // Future<String> getChatIdByUsername(String username);
+  // Future<void> createChatIdForContact(FarmLinkUser user);
 }
 
 abstract class BaseDeviceStorageProvider extends BaseProvider {

@@ -1,9 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 
 class Paths {
-  /*
-  Firebase paths
-   */
   static const String profilePicturePath = 'profile_pictures';
   static const String imageAttachmentsPath = 'images';
   static const String videoAttachmentsPath = 'videos';
