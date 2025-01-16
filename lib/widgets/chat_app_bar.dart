@@ -35,12 +35,14 @@ class _ChatAppBarState extends State<ChatAppBar> {
         if (state is FetchedContactDetailsState) {
           setState(() {
             username = state.user.username;
-            image = Image.network(
-              state.user.photoUrl,
-              errorBuilder: (context, error, stackTrace) {
-                return Image.asset(Assets.user);
-              },
-            );
+            image = (state.user.photoUrl.isNotEmpty)
+                ? Image.network(
+                    state.user.photoUrl,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(Assets.user);
+                    },
+                  )
+                : Image.asset(Assets.user);
           });
         }
       },
