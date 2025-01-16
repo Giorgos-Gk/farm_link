@@ -15,6 +15,7 @@ class InputWidget extends StatelessWidget {
               child: TextField(
                 style: TextStyle(color: Palette.primaryColor, fontSize: 15.0),
                 controller: textEditingController,
+                autofocus: true,
                 decoration: InputDecoration(
                   hintText: 'Γράψτε εδω...',
                   hintStyle: TextStyle(color: Palette.greyColor),

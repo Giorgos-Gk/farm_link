@@ -1,15 +1,19 @@
 import 'package:farm_link/bloc/authentication/auth_bloc.dart';
 import 'package:farm_link/bloc/authentication/auth_event.dart';
 import 'package:farm_link/bloc/authentication/auth_state.dart';
+import 'package:farm_link/bloc/contacts/contacts_bloc.dart';
 import 'package:farm_link/config/pallete.dart';
 import 'package:farm_link/pages/contact_list_page.dart';
-import 'package:farm_link/pages/conversation_page_slide.dart';
+import 'package:farm_link/repository/chat_repository.dart';
+import 'package:farm_link/repository/storage_repository.dart';
+import 'package:farm_link/repository/user_data_repository.dart';
 import 'package:farm_link/utils/shared_objects.dart';
 import 'package:farm_link/view/welcome_view.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'bloc/chat/chat_bloc.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,10 +21,27 @@ Future<void> main() async {
   SharedObjects.prefs = await CachedSharedPreferences.getInstance();
   final authBloc = AuthBloc();
   authBloc.add(AuthEventCheckSession());
+  final UserDataRepository userDataRepository = UserDataRepository();
+  final StorageRepository storageRepository = StorageRepository();
+  final ChatRepository chatRepository = ChatRepository();
 
   runApp(
-    BlocProvider.value(
-      value: authBloc,
+    MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>.value(value: authBloc),
+        BlocProvider<ChatBloc>(
+          create: (context) => ChatBloc(
+            userDataRepository: userDataRepository,
+            storageRepository: storageRepository,
+            chatRepository: chatRepository,
+          ),
+        ),
+        BlocProvider<ContactsBloc>(
+          create: (BuildContext context) => ContactsBloc(
+              userDataRepository: userDataRepository,
+              chatRepository: chatRepository),
+        ),
+      ],
       child: const FarmLink(),
     ),
   );
@@ -45,12 +66,10 @@ class FarmLink extends StatelessWidget {
       ),
       home: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
-          if (state is AuthStateLoggedOut) {
-            return const WelcomeView();
-          } else if (state is AuthStateLoggedIn) {
-            return const ConversationPageSlide();
-          } else {
+          if (state is AuthStateLoggedIn) {
             return const ContactListPage();
+          } else {
+            return const WelcomeView();
           }
         },
       ),

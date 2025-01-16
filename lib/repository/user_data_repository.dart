@@ -1,6 +1,5 @@
 import 'package:farm_link/models/farmlink_user.dart';
 import 'package:farm_link/provider/user_data_provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../models/contact.dart';
 import '../provider/base_provider.dart';
 import 'base_repository.dart';
@@ -11,8 +10,12 @@ class UserDataRepository extends BaseRepository {
   UserDataRepository({BaseUserDataProvider? provider})
       : userDataProvider = provider ?? UserDataProvider();
 
-  Future<FarmLinkUser> saveDetailsFromGoogleAuth(User user) =>
-      userDataProvider.saveDetailsFromGoogleAuth(user);
+  Future<Contact?> getContactByUsername(String username) async {
+    final contacts = await getContacts().first;
+    return contacts.firstWhere(
+      (contact) => contact.username == username,
+    );
+  }
 
   Future<FarmLinkUser> saveProfileDetails(
           String profileImageUrl, String username) =>
@@ -20,13 +23,18 @@ class UserDataRepository extends BaseRepository {
 
   Future<bool> isProfileComplete() => userDataProvider.isProfileComplete();
 
-  Future<List<Contact>> getContacts() => userDataProvider.getContacts();
+  Stream<List<Contact>> getContacts() {
+    return Stream.fromFuture(userDataProvider.getContacts());
+  }
+
+  Future<FarmLinkUser> getUser(String username) =>
+      userDataProvider.getUser(username);
 
   Future<void> addContact(String username) =>
       userDataProvider.addContact(username);
 
-  Future<void> updateProfilePicture(String profilePictureUrl) =>
-      userDataProvider.updateProfilePicture(profilePictureUrl);
+  // Future<void> updateProfilePicture(String profilePictureUrl) =>
+  //     userDataProvider.updateProfilePicture(profilePictureUrl);
 
   @override
   void dispose() {

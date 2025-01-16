@@ -1,9 +1,10 @@
 import 'package:equatable/equatable.dart';
+import 'package:farm_link/models/contact.dart';
 import 'package:meta/meta.dart';
 
 @immutable
 abstract class ContactsEvent extends Equatable {
-  const ContactsEvent(); // Κενός constructor
+  const ContactsEvent();
 
   @override
   List<Object?> get props => [];
@@ -16,21 +17,39 @@ class FetchContactsEvent extends ContactsEvent {
   String toString() => 'FetchContactsEvent';
 }
 
-class AddContactsEvent extends ContactsEvent {
+// Dispatch received contacts from stream
+class ReceivedContactsEvent extends ContactsEvent {
+  final List<Contact> contacts;
+
+  const ReceivedContactsEvent(this.contacts);
+
+  @override
+  List<Object?> get props => [contacts];
+
+  @override
+  String toString() => 'ReceivedContactsEvent {contacts: ${contacts.length}}';
+}
+
+class AddContactEvent extends ContactsEvent {
   final String username;
 
-  const AddContactsEvent({required this.username});
+  const AddContactEvent({required this.username});
 
   @override
   List<Object?> get props => [username];
 
   @override
-  String toString() => 'AddContactsEvent { username: $username }';
+  String toString() => 'AddContactEvent {username: $username}';
 }
 
-class ClickedContactsEvent extends ContactsEvent {
-  const ClickedContactsEvent();
+class ClickedContactEvent extends ContactsEvent {
+  final Contact contact;
+
+  const ClickedContactEvent(this.contact);
 
   @override
-  String toString() => 'ClickedContactEvent';
+  List<Object?> get props => [contact];
+
+  @override
+  String toString() => 'ClickedContactEvent {contact: ${contact.username}}';
 }

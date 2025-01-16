@@ -21,6 +21,8 @@ class Contact {
     );
   }
 
+  get chatId => null;
+
   @override
   String toString() {
     return '{ documentId: $documentId, name: $name, username: $username }';

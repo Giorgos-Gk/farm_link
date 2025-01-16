@@ -4,15 +4,15 @@ abstract class FarmLinkException implements Exception {
 
 class UserNotFoundException extends FarmLinkException {
   @override
-  String errorMessage() => 'No user found for provided uid/username';
+  String errorMessage() => 'Δεν βρέθηκε χρήστης';
 }
 
 class UsernameMappingUndefinedException extends FarmLinkException {
   @override
-  String errorMessage() => 'User not found';
+  String errorMessage() => 'Ο χρήστης δεν βρέθηκε';
 }
 
 class ContactAlreadyExistsException extends FarmLinkException {
   @override
-  String errorMessage() => 'Contact already exists!';
+  String errorMessage() => 'Η επικοινωνία υπάρχει ήδη';
 }

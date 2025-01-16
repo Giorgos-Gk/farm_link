@@ -91,6 +91,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (imageUrl != null) {
           await user.updatePhotoURL(imageUrl);
         }
+        await addToUsernameUidMap(event.username, user.uid);
 
         await _storeUserDataInFirestore(
           userId: user.uid,
@@ -125,6 +126,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
       }
     });
+  }
+  Future<void> addToUsernameUidMap(String username, String uid) async {
+    await FirebaseFirestore.instance
+        .collection('username_uid_map')
+        .doc(username)
+        .set({'uid': uid});
   }
 
   Future<void> _storeUserDataInFirestore({

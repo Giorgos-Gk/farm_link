@@ -1,30 +1,34 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FarmLinkUser {
-  final String uid;
-  final String? email;
-  final String? displayName;
-  final String? photoUrl;
+  final String documentId;
+  final String email;
+  final String username;
+  final String photoUrl;
 
   FarmLinkUser({
-    required this.uid,
-    this.email,
-    this.displayName,
-    this.photoUrl,
+    required this.documentId,
+    required this.email,
+    required this.username,
+    required this.photoUrl,
   });
 
-  factory FarmLinkUser.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>? ?? {};
+  factory FarmLinkUser.fromFirestore(
+      DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data();
+    if (data == null) {
+      throw Exception('Document does not exist or data is null');
+    }
     return FarmLinkUser(
-      uid: doc.id,
-      email: data['email'],
-      displayName: data['name'],
-      photoUrl: data['photoUrl'],
+      documentId: doc.id,
+      email: data['email'] as String? ?? '',
+      username: data['username'] as String? ?? '',
+      photoUrl: data['photoUrl'] as String? ?? '',
     );
   }
 
   @override
   String toString() {
-    return 'FarmLinkUser(uid: $uid, email: $email, displayName: $displayName, photoUrl: $photoUrl)';
+    return 'FarmLinkUser(documentId: $documentId, email: $email, username: $username, photoUrl: $photoUrl)';
   }
 }

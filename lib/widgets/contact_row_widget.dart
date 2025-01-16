@@ -1,33 +1,42 @@
-import 'package:farm_link/config/pallete.dart';
+import 'package:farm_link/models/contact.dart';
 import 'package:flutter/material.dart';
-import '../models/contact.dart';
+import 'package:farm_link/models/chat.dart';
+import 'package:farm_link/pages/conversation_page.dart';
 
 class ContactRowWidget extends StatelessWidget {
+  final String username;
+
   const ContactRowWidget({
     Key? key,
-    required this.contact,
+    required Contact contact,
+    required this.username,
   }) : super(key: key);
-  final Contact contact;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        color: Palette.primaryColor,
-        child: Padding(
-            padding: const EdgeInsets.only(left: 30, top: 10, bottom: 10),
-            child: RichText(
-              text: TextSpan(
-                style: TextStyle(
-                  fontSize: 14.0,
-                  color: Colors.black,
-                ),
-                children: <TextSpan>[
-                  TextSpan(text: contact.getFirstName()),
-                  TextSpan(
-                      text: ' ' + contact.getLastName(),
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-            )));
+    return GestureDetector(
+      onTap: () {
+        // Δημιουργία ενός Chat αντικειμένου με προσωρινό chatId
+        final chat = Chat(username: username, chatId: "temp_chat_id");
+
+        // Πλοήγηση στη σελίδα συνομιλίας
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ConversationPage(chat),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        child: Text(
+          username,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
   }
 }

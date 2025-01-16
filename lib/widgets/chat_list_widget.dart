@@ -1,19 +1,51 @@
+import 'package:farm_link/bloc/chat/chat_bloc.dart';
+import 'package:farm_link/bloc/chat/chat_state.dart';
+import 'package:farm_link/models/message.dart';
+import 'package:farm_link/widgets/chat_item_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'chat_item_widget.dart';
+class ChatListWidget extends StatefulWidget {
+  const ChatListWidget({Key? key}) : super(key: key);
 
-class ChatListWidget extends StatelessWidget {
-  final ScrollController listScrollController = new ScrollController();
+  @override
+  _ChatListWidgetState createState() => _ChatListWidgetState();
+}
+
+class _ChatListWidgetState extends State<ChatListWidget> {
+  final ScrollController listScrollController = ScrollController();
+  List<Message> messages = [];
+
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    return Flexible(
-        child: ListView.builder(
-      padding: EdgeInsets.all(10.0),
-      itemBuilder: (context, index) => ChatItemWidget(index),
-      itemCount: 20,
-      reverse: true,
-      controller: listScrollController,
-    ));
+    return BlocBuilder<ChatBloc, ChatState>(
+      builder: (context, state) {
+        if (state is FetchedMessagesState) {
+          messages = state.messages;
+        }
+
+        // Debugging output for state
+        debugPrint('ChatListWidget state: $state');
+        debugPrint('Messages: ${messages.length}');
+
+        if (messages.isEmpty) {
+          return const Center(
+            child: Text(
+              'Δεν υπάρχουν μηνύματα.',
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(10.0),
+          itemBuilder: (context, index) =>
+              ChatItemWidget(messages[index] as int),
+          itemCount: messages.length,
+          reverse: true,
+          controller: listScrollController,
+        );
+      },
+    );
   }
 }

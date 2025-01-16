@@ -1,44 +1,52 @@
 import 'package:flutter/material.dart';
-import '../config/pallete.dart';
+import 'package:farm_link/config/pallete.dart';
 
 class GradientFab extends StatelessWidget {
   const GradientFab({
     Key? key,
-    required this.animation,
-    required this.elevation,
+    this.animation,
+    this.elevation = 6.0,
     required this.child,
     required this.onPressed,
   }) : super(key: key);
 
-  final Animation<double> animation;
+  final Animation<double>? animation;
+  final double elevation;
   final VoidCallback onPressed;
   final Widget child;
-  final double elevation;
 
   @override
   Widget build(BuildContext context) {
-    var fab = FloatingActionButton(
-      elevation: elevation != null ? elevation : 6,
+    final fab = FloatingActionButton(
+      elevation: elevation,
+      onPressed: onPressed,
+      backgroundColor: Colors.transparent,
       child: Container(
-        constraints: BoxConstraints.expand(),
+        constraints: const BoxConstraints(
+          minWidth: 56.0,
+          minHeight: 56.0,
+        ),
         decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-                begin: Alignment.center,
-                end: Alignment.bottomRight,
-                colors: [
-                  Palette.gradientStartColor,
-                  Palette.gradientEndColor
-                ])),
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Palette.gradientStartColor,
+              Palette.gradientEndColor,
+            ],
+          ),
+        ),
         child: child,
       ),
-      onPressed: onPressed,
     );
+
     return animation != null
         ? AnimatedSize(
-            duration: Duration(milliseconds: 1000),
+            duration: const Duration(milliseconds: 300),
             curve: Curves.linear,
-            child: ScaleTransition(scale: animation, child: fab))
+            child: ScaleTransition(scale: animation!, child: fab),
+          )
         : fab;
   }
 }

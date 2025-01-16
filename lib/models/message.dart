@@ -1,27 +1,41 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:farm_link/config/Constants.dart';
+import 'package:farm_link/utils/shared_objects.dart';
 
 abstract class Message {
   final int timeStamp;
   final String senderName;
   final String senderUsername;
+  final bool isSelf;
+  String? documentId;
 
-  Message(this.timeStamp, this.senderName, this.senderUsername);
+  Message(this.timeStamp, this.senderName, this.senderUsername)
+      : isSelf = SharedObjects.prefs.getString(Constants.sessionUsername) ==
+            senderUsername;
 
-  factory Message.fromFireStore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
-    final int type = data['type'] as int;
+  factory Message.fromFireStore(DocumentSnapshot doc) {
+    final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final int type = data['type'];
+    Message message;
+
     switch (type) {
       case 0:
-        return TextMessage.fromFirestore(doc);
+        message = TextMessage.fromFirestore(doc);
+        break;
       case 1:
-        return ImageMessage.fromFirestore(doc);
+        message = ImageMessage.fromFirestore(doc);
+        break;
       case 2:
-        return VideoMessage.fromFirestore(doc);
+        message = VideoMessage.fromFirestore(doc);
+        break;
       case 3:
-        return FileMessage.fromFirestore(doc);
+        message = FileMessage.fromFirestore(doc);
+        break;
       default:
-        throw ArgumentError('Invalid message type: $type');
+        throw Exception('Unknown message type: $type');
     }
+    message.documentId = doc.id; // Initialize documentId
+    return message;
   }
 
   Map<String, dynamic> toMap();
@@ -34,25 +48,26 @@ class TextMessage extends Message {
       this.text, int timeStamp, String senderName, String senderUsername)
       : super(timeStamp, senderName, senderUsername);
 
-  factory TextMessage.fromFirestore(
-      DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
+  factory TextMessage.fromFirestore(DocumentSnapshot doc) {
+    final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return TextMessage(
-      data['text'] as String,
-      data['timeStamp'] as int,
-      data['senderName'] as String,
-      data['senderUsername'] as String,
+      data['text'],
+      data['timeStamp'],
+      data['senderName'],
+      data['senderUsername'],
     );
   }
 
   @override
-  Map<String, dynamic> toMap() => {
-        'type': 0,
-        'text': text,
-        'timeStamp': timeStamp,
-        'senderName': senderName,
-        'senderUsername': senderUsername,
-      };
+  Map<String, dynamic> toMap() {
+    return {
+      'text': text,
+      'timeStamp': timeStamp,
+      'senderName': senderName,
+      'senderUsername': senderUsername,
+      'type': 0,
+    };
+  }
 }
 
 class ImageMessage extends Message {
@@ -62,25 +77,26 @@ class ImageMessage extends Message {
       this.imageUrl, int timeStamp, String senderName, String senderUsername)
       : super(timeStamp, senderName, senderUsername);
 
-  factory ImageMessage.fromFirestore(
-      DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
+  factory ImageMessage.fromFirestore(DocumentSnapshot doc) {
+    final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return ImageMessage(
-      data['imageUrl'] as String,
-      data['timeStamp'] as int,
-      data['senderName'] as String,
-      data['senderUsername'] as String,
+      data['imageUrl'],
+      data['timeStamp'],
+      data['senderName'],
+      data['senderUsername'],
     );
   }
 
   @override
-  Map<String, dynamic> toMap() => {
-        'type': 1,
-        'imageUrl': imageUrl,
-        'timeStamp': timeStamp,
-        'senderName': senderName,
-        'senderUsername': senderUsername,
-      };
+  Map<String, dynamic> toMap() {
+    return {
+      'imageUrl': imageUrl,
+      'timeStamp': timeStamp,
+      'senderName': senderName,
+      'senderUsername': senderUsername,
+      'type': 1,
+    };
+  }
 }
 
 class VideoMessage extends Message {
@@ -90,25 +106,26 @@ class VideoMessage extends Message {
       this.videoUrl, int timeStamp, String senderName, String senderUsername)
       : super(timeStamp, senderName, senderUsername);
 
-  factory VideoMessage.fromFirestore(
-      DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
+  factory VideoMessage.fromFirestore(DocumentSnapshot doc) {
+    final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return VideoMessage(
-      data['videoUrl'] as String,
-      data['timeStamp'] as int,
-      data['senderName'] as String,
-      data['senderUsername'] as String,
+      data['videoUrl'],
+      data['timeStamp'],
+      data['senderName'],
+      data['senderUsername'],
     );
   }
 
   @override
-  Map<String, dynamic> toMap() => {
-        'type': 2,
-        'videoUrl': videoUrl,
-        'timeStamp': timeStamp,
-        'senderName': senderName,
-        'senderUsername': senderUsername,
-      };
+  Map<String, dynamic> toMap() {
+    return {
+      'videoUrl': videoUrl,
+      'timeStamp': timeStamp,
+      'senderName': senderName,
+      'senderUsername': senderUsername,
+      'type': 2,
+    };
+  }
 }
 
 class FileMessage extends Message {
@@ -118,23 +135,24 @@ class FileMessage extends Message {
       this.fileUrl, int timeStamp, String senderName, String senderUsername)
       : super(timeStamp, senderName, senderUsername);
 
-  factory FileMessage.fromFirestore(
-      DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
+  factory FileMessage.fromFirestore(DocumentSnapshot doc) {
+    final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return FileMessage(
-      data['fileUrl'] as String,
-      data['timeStamp'] as int,
-      data['senderName'] as String,
-      data['senderUsername'] as String,
+      data['fileUrl'],
+      data['timeStamp'],
+      data['senderName'],
+      data['senderUsername'],
     );
   }
 
   @override
-  Map<String, dynamic> toMap() => {
-        'type': 3,
-        'fileUrl': fileUrl,
-        'timeStamp': timeStamp,
-        'senderName': senderName,
-        'senderUsername': senderUsername,
-      };
+  Map<String, dynamic> toMap() {
+    return {
+      'fileUrl': fileUrl,
+      'timeStamp': timeStamp,
+      'senderName': senderName,
+      'senderUsername': senderUsername,
+      'type': 3,
+    };
+  }
 }

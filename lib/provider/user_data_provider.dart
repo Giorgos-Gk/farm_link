@@ -1,13 +1,13 @@
 import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:farm_link/config/contacts.dart';
+import 'package:farm_link/config/paths.dart';
 import 'package:farm_link/models/contact.dart';
 import 'package:farm_link/models/farmlink_user.dart';
-import 'package:farm_link/provider/base_provider.dart';
 import 'package:farm_link/utils/exceptions.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:farm_link/config/constants.dart';
-import 'package:farm_link/config/paths.dart';
 import 'package:farm_link/utils/shared_objects.dart';
+import 'base_provider.dart';
 
 class UserDataProvider extends BaseUserDataProvider {
   final FirebaseFirestore fireStoreDb;
@@ -15,134 +15,130 @@ class UserDataProvider extends BaseUserDataProvider {
   UserDataProvider({FirebaseFirestore? fireStoreDb})
       : fireStoreDb = fireStoreDb ?? FirebaseFirestore.instance;
 
-  @override
-  Future<FarmLinkUser> saveDetailsFromGoogleAuth(User user) async {
-    final ref = fireStoreDb.collection(Paths.usersPath).doc(user.uid);
-    final bool userExists = (await ref.get()).exists;
-
-    var data = {
-      'uid': user.uid,
-      'email': user.email,
-      'name': user.displayName,
-    };
-
-    if (!userExists && user.photoURL != null) {
-      data['photoUrl'] = user.photoURL;
-    }
-
-    await ref.set(data, SetOptions(merge: true));
-    final currentDocument = await ref.get();
-
-    await SharedObjects.prefs
-        .setString(Constants.sessionUsername, user.displayName ?? '');
-
-    return FarmLinkUser.fromFirestore(currentDocument);
-  }
-
-  @override
   Future<FarmLinkUser> saveProfileDetails(
       String profileImageUrl, String username) async {
-    final String uid =
-        SharedObjects.prefs.getString(Constants.sessionUid) ?? '';
-    final userRef = fireStoreDb.collection(Paths.usersPath).doc(uid);
+    String? uid = SharedObjects.prefs.getString(Constants.sessionUid);
+    if (uid == null) throw Exception("Session UID is null");
 
-    final usernameRef =
+    DocumentReference<Map<String, dynamic>> mapReference =
         fireStoreDb.collection(Paths.usernameUidMapPath).doc(username);
-    await usernameRef.set({'uid': uid});
+    await mapReference.set({'uid': uid});
 
-    var data = {
+    DocumentReference<Map<String, dynamic>> ref =
+        fireStoreDb.collection(Paths.usersPath).doc(uid);
+    await ref.set({
       'photoUrl': profileImageUrl,
       'username': username,
-    };
+    }, SetOptions(merge: true));
 
-    await userRef.set(data, SetOptions(merge: true));
-    final currentDocument = await userRef.get();
-
-    await SharedObjects.prefs.setString(Constants.sessionUsername, username);
-    await SharedObjects.prefs.setString(
-        Constants.sessionProfilePictureUrl, currentDocument['photoUrl'] ?? '');
-
+    final DocumentSnapshot<Map<String, dynamic>> currentDocument =
+        await ref.get();
+    SharedObjects.prefs.setString(Constants.sessionUsername, username);
     return FarmLinkUser.fromFirestore(currentDocument);
-  }
-
-  @override
-  Future<void> updateProfilePicture(String profilePictureUrl) async {
-    final String uid =
-        SharedObjects.prefs.getString(Constants.sessionUid) ?? '';
-    final ref = fireStoreDb.collection(Paths.usersPath).doc(uid);
-    await ref.set({'photoUrl': profilePictureUrl}, SetOptions(merge: true));
   }
 
   @override
   Future<bool> isProfileComplete() async {
-    final String uid =
-        SharedObjects.prefs.getString(Constants.sessionUid) ?? '';
-    final ref = fireStoreDb.collection(Paths.usersPath).doc(uid);
-    final documentSnapshot = await ref.get();
+    String? uid = SharedObjects.prefs.getString(Constants.sessionUid);
+    if (uid == null) throw Exception("Session UID is null");
 
-    final bool isComplete = documentSnapshot.exists &&
-        documentSnapshot.data() != null &&
-        documentSnapshot['photoUrl'] != null &&
-        documentSnapshot['username'] != null;
+    DocumentReference<Map<String, dynamic>> ref =
+        fireStoreDb.collection(Paths.usersPath).doc(uid);
+    final DocumentSnapshot<Map<String, dynamic>> currentDocument =
+        await ref.get();
+    bool isProfileComplete =
+        currentDocument.exists && currentDocument.data()?['username'] != null;
 
-    if (isComplete) {
-      await SharedObjects.prefs
-          .setString(Constants.sessionUsername, documentSnapshot['username']);
-      await SharedObjects.prefs.setString(
-          Constants.sessionProfilePictureUrl, documentSnapshot['photoUrl']);
+    if (isProfileComplete) {
+      SharedObjects.prefs.setString(
+          Constants.sessionUsername, currentDocument.data()?['username']);
+      SharedObjects.prefs
+          .setString(Constants.sessionName, currentDocument.data()?['name']);
     }
-
-    return isComplete;
+    return isProfileComplete;
   }
 
   @override
-  void dispose() {}
-
   Future<List<Contact>> getContacts() async {
-    final ref = fireStoreDb
-        .collection(Paths.usersPath)
-        .doc(SharedObjects.prefs.getString(Constants.sessionUid) ?? '');
-    final snapshot = await ref.get();
+    CollectionReference<Map<String, dynamic>> userRef =
+        fireStoreDb.collection(Paths.usersPath);
+    String? uid = SharedObjects.prefs.getString(Constants.sessionUid);
+    if (uid == null) throw Exception("Session UID is null");
 
-    List<String> contacts = [];
-    if (snapshot.exists && snapshot.data() != null) {
-      contacts = List<String>.from(snapshot.data()!['contacts'] ?? []);
-    } else {
-      await ref.set({'contacts': []}, SetOptions(merge: true));
+    DocumentReference<Map<String, dynamic>> ref = userRef.doc(uid);
+
+    DocumentSnapshot<Map<String, dynamic>> documentSnapshot = await ref.get();
+
+    List<String> contacts =
+        List<String>.from(documentSnapshot.data()?['contacts'] ?? []);
+
+    List<Contact> contactList = [];
+    for (String username in contacts) {
+      String contactUid = await getUidByUsername(username);
+      DocumentSnapshot<Map<String, dynamic>> contactSnapshot =
+          await userRef.doc(contactUid).get();
+      contactList.add(Contact.fromFirestore(contactSnapshot));
     }
-
-    return await Future.wait(contacts.map((username) async {
-      final uid = await getUidByUsername(username);
-      final contactSnapshot =
-          await fireStoreDb.collection(Paths.usersPath).doc(uid).get();
-      return Contact.fromFirestore(contactSnapshot);
-    }));
+    return contactList;
   }
 
-  Future<void> addContact(String username) async {
-    final ref = fireStoreDb
-        .collection(Paths.usersPath)
-        .doc(SharedObjects.prefs.getString(Constants.sessionUid) ?? '');
-    final snapshot = await ref.get();
-
-    List<String> contacts = [];
-    if (snapshot.exists && snapshot.data() != null) {
-      contacts = List<String>.from(snapshot.data()!['contacts'] ?? []);
+  void mapDocumentToContact(
+      CollectionReference<Map<String, dynamic>> userRef,
+      DocumentReference<Map<String, dynamic>> ref,
+      DocumentSnapshot<Map<String, dynamic>> documentSnapshot,
+      Sink<List<Contact>> sink) async {
+    List<String> contacts =
+        List<String>.from(documentSnapshot.data()?['contacts'] ?? []);
+    if (contacts.isEmpty) {
+      await ref.update({'contacts': []});
     }
 
+    List<Contact> contactList = [];
+    for (String username in contacts) {
+      String uid = await getUidByUsername(username);
+      DocumentSnapshot<Map<String, dynamic>> contactSnapshot =
+          await userRef.doc(uid).get();
+      contactList.add(Contact.fromFirestore(contactSnapshot));
+    }
+    contactList.sort((a, b) => a.name.compareTo(b.name));
+    sink.add(contactList);
+  }
+
+  @override
+  Future<void> addContact(String username) async {
+    FarmLinkUser contactUser = await getUser(username);
+    String? uid = SharedObjects.prefs.getString(Constants.sessionUid);
+    if (uid == null) throw Exception("Session UID is null");
+
+    DocumentReference<Map<String, dynamic>> ref =
+        fireStoreDb.collection(Paths.usersPath).doc(uid);
+    final documentSnapshot = await ref.get();
+    List<String> contacts =
+        List<String>.from(documentSnapshot.data()?['contacts'] ?? []);
     if (contacts.contains(username)) {
       throw ContactAlreadyExistsException();
     }
-
     contacts.add(username);
-    await ref.update({'contacts': contacts});
+    await ref.set({'contacts': contacts}, SetOptions(merge: true));
+
+    String? sessionUsername =
+        SharedObjects.prefs.getString(Constants.sessionUsername);
+    DocumentReference<Map<String, dynamic>> contactRef =
+        fireStoreDb.collection(Paths.usersPath).doc(contactUser.documentId);
+    final contactSnapshot = await contactRef.get();
+    contacts = List<String>.from(contactSnapshot.data()?['contacts'] ?? []);
+    if (contacts.contains(sessionUsername)) {
+      throw ContactAlreadyExistsException();
+    }
+    contacts.add(sessionUsername!);
+    await contactRef.set({'contacts': contacts}, SetOptions(merge: true));
   }
 
   Future<FarmLinkUser> getUser(String username) async {
-    final uid = await getUidByUsername(username);
-    final ref = fireStoreDb.collection(Paths.usersPath).doc(uid);
-    final snapshot = await ref.get();
-
+    String uid = await getUidByUsername(username);
+    DocumentReference<Map<String, dynamic>> ref =
+        fireStoreDb.collection(Paths.usersPath).doc(uid);
+    DocumentSnapshot<Map<String, dynamic>> snapshot = await ref.get();
     if (snapshot.exists) {
       return FarmLinkUser.fromFirestore(snapshot);
     } else {
@@ -151,15 +147,18 @@ class UserDataProvider extends BaseUserDataProvider {
   }
 
   Future<String> getUidByUsername(String username) async {
-    final ref = fireStoreDb.collection(Paths.usernameUidMapPath).doc(username);
-    final documentSnapshot = await ref.get();
+    DocumentReference<Map<String, dynamic>> ref =
+        fireStoreDb.collection(Paths.usernameUidMapPath).doc(username);
+    DocumentSnapshot<Map<String, dynamic>> documentSnapshot = await ref.get();
 
-    if (documentSnapshot.exists &&
-        documentSnapshot.data() != null &&
-        documentSnapshot.data()!['uid'] != null) {
-      return documentSnapshot.data()!['uid'];
+    final data = documentSnapshot.data();
+    if (documentSnapshot.exists && data != null && data['uid'] != null) {
+      return data['uid'] as String;
     } else {
       throw UsernameMappingUndefinedException();
     }
   }
+
+  @override
+  void dispose() {}
 }

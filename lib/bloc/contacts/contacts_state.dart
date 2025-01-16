@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
-import 'package:meta/meta.dart';
-import 'package:farm_link/utils/exceptions.dart';
 import 'package:farm_link/models/contact.dart';
+import 'package:farm_link/utils/exceptions.dart';
+import 'package:meta/meta.dart';
 
 @immutable
 abstract class ContactsState extends Equatable {
@@ -36,47 +36,45 @@ class FetchedContactsState extends ContactsState {
   List<Object?> get props => [contacts];
 
   @override
-  String toString() => 'FetchedContactsState { contacts: $contacts }';
+  String toString() => 'FetchedContactsState {contacts: ${contacts.length}}';
 }
 
-class ShowAddContactsState extends ContactsState {
-  const ShowAddContactsState();
-
-  @override
-  String toString() => 'ShowAddContactState';
-}
-
-class AddContactsProgressState extends ContactsState {
-  const AddContactsProgressState();
+class AddContactProgressState extends ContactsState {
+  const AddContactProgressState();
 
   @override
   String toString() => 'AddContactProgressState';
 }
 
-class AddContactsSuccessState extends ContactsState {
-  const AddContactsSuccessState();
+class AddContactSuccessState extends ContactsState {
+  const AddContactSuccessState();
 
   @override
   String toString() => 'AddContactSuccessState';
 }
 
-class AddContactsFailedState extends ContactsState {
+class AddContactFailedState extends ContactsState {
   final FarmLinkException exception;
 
-  const AddContactsFailedState(this.exception);
+  const AddContactFailedState(this.exception);
 
   @override
   List<Object?> get props => [exception];
 
   @override
-  String toString() => 'AddContactFailedState { exception: $exception }';
+  String toString() => 'AddContactFailedState {exception: $exception}';
 }
 
-class ClickedContactsState extends ContactsState {
-  const ClickedContactsState();
+class ClickedContactState extends ContactsState {
+  final Contact contact;
+
+  const ClickedContactState(this.contact);
 
   @override
-  String toString() => 'ClickedContactState';
+  List<Object?> get props => [contact];
+
+  @override
+  String toString() => 'ClickedContactState {contact: ${contact.username}}';
 }
 
 class ErrorState extends ContactsState {
@@ -88,5 +86,5 @@ class ErrorState extends ContactsState {
   List<Object?> get props => [exception];
 
   @override
-  String toString() => 'ErrorState { exception: $exception }';
+  String toString() => 'ErrorState {exception: $exception}';
 }

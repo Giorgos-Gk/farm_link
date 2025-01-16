@@ -55,8 +55,8 @@ class _DoneState extends State<Done> {
           child: Center(
             child: Text(
               loggedInUser != null
-                  ? 'Welcome, ${loggedInUser!.email}!'
-                  : 'Welcome User!',
+                  ? 'Καλώς ήρθατε, ${loggedInUser!.email}!'
+                  : 'Καλώς ήρθατε χρήστη!',
               style: TextStyle(fontSize: 50.0, color: Colors.white),
               textAlign: TextAlign.center,
             ),

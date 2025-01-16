@@ -1,7 +1,12 @@
 class Chat {
-  String username;
-  String chatId;
-  Chat(this.username, this.chatId);
+  final String username;
+  final String chatId;
+
+  Chat({
+    required this.username,
+    required this.chatId,
+  });
+
   @override
-  String toString() => '{ username= $username, chatId = $chatId}';
+  String toString() => '{ username: $username, chatId: $chatId }';
 }
