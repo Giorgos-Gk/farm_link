@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:farm_link/models/farmlink_user.dart';
 import 'package:farm_link/repository/chat_repository.dart';
 import 'package:farm_link/repository/user_data_repository.dart';
 import 'package:farm_link/utils/exceptions.dart';
