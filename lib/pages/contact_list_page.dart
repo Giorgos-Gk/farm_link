@@ -7,7 +7,6 @@ import 'package:farm_link/config/styles.dart';
 import 'package:farm_link/models/contact.dart';
 import 'package:farm_link/widgets/contact_row_widget.dart';
 import 'package:farm_link/widgets/gradient_fab.dart';
-import 'package:farm_link/widgets/quick_scroll_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -48,6 +47,32 @@ class _ContactListPageState extends State<ContactListPage>
     return SafeArea(
       child: Scaffold(
         backgroundColor: Palette.primaryBackgroundColor,
+        appBar: AppBar(
+          backgroundColor: Palette.primaryBackgroundColor,
+          centerTitle: true,
+          elevation: 10,
+          title: Text("Επαφές", style: Styles.appBarTitle),
+          actions: [
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert),
+              onSelected: (value) {
+                if (value == 'Logout') {
+                  // Add logout logic
+                } else if (value == 'Settings') {
+                  // Navigate to settings
+                }
+              },
+              itemBuilder: (BuildContext context) {
+                return {'Settings', 'Logout'}.map((String choice) {
+                  return PopupMenuItem<String>(
+                    value: choice,
+                    child: Text(choice),
+                  );
+                }).toList();
+              },
+            ),
+          ],
+        ),
         body: BlocListener<ContactsBloc, ContactsState>(
           listener: (context, state) {
             if (state is AddContactSuccessState) {
@@ -73,17 +98,6 @@ class _ContactListPageState extends State<ContactListPage>
               CustomScrollView(
                 controller: scrollController,
                 slivers: <Widget>[
-                  SliverAppBar(
-                    backgroundColor: Palette.primaryBackgroundColor,
-                    expandedHeight: 180.0,
-                    pinned: true,
-                    elevation: 0,
-                    centerTitle: true,
-                    flexibleSpace: FlexibleSpaceBar(
-                      centerTitle: true,
-                      title: Text("Επαφές", style: Styles.appBarTitle),
-                    ),
-                  ),
                   BlocBuilder<ContactsBloc, ContactsState>(
                     builder: (context, state) {
                       if (state is FetchingContactsState) {
@@ -110,13 +124,6 @@ class _ContactListPageState extends State<ContactListPage>
                     },
                   ),
                 ],
-              ),
-              Container(
-                margin: const EdgeInsets.only(top: 190),
-                child: QuickScrollBar(
-                  nameList: contacts.map((contact) => contact.name).toList(),
-                  scrollController: scrollController,
-                ),
               ),
             ],
           ),

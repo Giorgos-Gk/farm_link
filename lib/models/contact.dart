@@ -4,11 +4,13 @@ class Contact {
   final String username;
   final String name;
   final String documentId;
+  final String? photoUrl;
 
   Contact({
     required this.documentId,
     required this.username,
     required this.name,
+    this.photoUrl,
   });
 
   factory Contact.fromFirestore(DocumentSnapshot doc) {
@@ -18,6 +20,7 @@ class Contact {
       documentId: doc.id,
       username: data['username'] ?? '',
       name: data['name'] ?? '',
+      photoUrl: data['photoUrl'],
     );
   }
 
@@ -25,7 +28,7 @@ class Contact {
 
   @override
   String toString() {
-    return '{ documentId: $documentId, name: $name, username: $username }';
+    return '{ documentId: $documentId, name: $name, username: $username ,  $photoUrl: photoUrl,}';
   }
 
   String getFirstName() => name.split(' ')[0];

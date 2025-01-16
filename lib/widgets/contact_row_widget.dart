@@ -4,22 +4,20 @@ import 'package:farm_link/models/chat.dart';
 import 'package:farm_link/pages/conversation_page.dart';
 
 class ContactRowWidget extends StatelessWidget {
-  final String username;
+  final Contact contact;
 
   const ContactRowWidget({
     Key? key,
-    required Contact contact,
-    required this.username,
+    required this.contact,
+    required String username,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Δημιουργία ενός Chat αντικειμένου με προσωρινό chatId
-        final chat = Chat(username: username, chatId: "temp_chat_id");
+        final chat = Chat(username: contact.username, chatId: "temp_chat_id");
 
-        // Πλοήγηση στη σελίδα συνομιλίας
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -29,12 +27,23 @@ class ContactRowWidget extends StatelessWidget {
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-        child: Text(
-          username,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 25,
+              backgroundImage: contact.photoUrl != null
+                  ? NetworkImage(contact.photoUrl!)
+                  : const AssetImage('assets/user.png') as ImageProvider,
+            ),
+            const SizedBox(width: 16),
+            Text(
+              contact.username,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );
