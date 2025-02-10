@@ -115,6 +115,7 @@ class _ContactListPageState extends State<ContactListPage>
                           (context, index) {
                             return ContactRowWidget(
                               contact: contacts[index],
+                              username: contacts[index].username,
                             );
                           },
                           childCount: contacts.length,
