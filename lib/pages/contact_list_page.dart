@@ -80,7 +80,7 @@ class _ContactListPageState extends State<ContactListPage>
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   behavior: SnackBarBehavior.floating,
-                  content: Text("Η επαφή προστεθηκε"),
+                  content: Text("Η επαφή προστέθηκε"),
                 ),
               );
             } else if (state is ErrorState || state is AddContactFailedState) {
@@ -93,39 +93,27 @@ class _ContactListPageState extends State<ContactListPage>
               );
             }
           },
-          child: Stack(
-            children: <Widget>[
-              CustomScrollView(
+          child: BlocBuilder<ContactsBloc, ContactsState>(
+            builder: (context, state) {
+              if (state is FetchingContactsState) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              if (state is FetchedContactsState) {
+                contacts = state.contacts;
+              }
+              return ListView.builder(
                 controller: scrollController,
-                slivers: <Widget>[
-                  BlocBuilder<ContactsBloc, ContactsState>(
-                    builder: (context, state) {
-                      if (state is FetchingContactsState) {
-                        return const SliverToBoxAdapter(
-                          child: Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      }
-                      if (state is FetchedContactsState) {
-                        contacts = state.contacts;
-                      }
-                      return SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            return ContactRowWidget(
-                              contact: contacts[index],
-                              username: contacts[index].username,
-                            );
-                          },
-                          childCount: contacts.length,
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ],
+                itemCount: contacts.length,
+                itemBuilder: (context, index) {
+                  return ContactRowWidget(
+                    contact: contacts[index],
+                    username: contacts[index].username,
+                  );
+                },
+              );
+            },
           ),
         ),
         floatingActionButton: GradientFab(
@@ -170,7 +158,7 @@ class _ContactListPageState extends State<ContactListPage>
                     child: Image.asset(Assets.social),
                   ),
                   const SizedBox(height: 40),
-                  Text('Προσθεστε μια επαφή', style: Styles.textHeading),
+                  Text('Προσθέστε μια επαφή', style: Styles.textHeading),
                   Container(
                     margin: const EdgeInsets.symmetric(
                         horizontal: 50, vertical: 20),

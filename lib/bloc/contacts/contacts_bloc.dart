@@ -20,7 +20,7 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
     on<ClickedContactEvent>(_onClickedContactEvent);
   }
 
-  Future<void> _onFetchContactsEvent(
+  void _onFetchContactsEvent(
       FetchContactsEvent event, Emitter<ContactsState> emit) async {
     emit(FetchingContactsState());
     try {
