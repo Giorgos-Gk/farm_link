@@ -34,7 +34,7 @@ abstract class Message {
       default:
         throw Exception('Unknown message type: $type');
     }
-    message.documentId = doc.id; // Initialize documentId
+    message.documentId = doc.id;
     return message;
   }
 
