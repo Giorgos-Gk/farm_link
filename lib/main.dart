@@ -1,78 +1,43 @@
 import 'package:farm_link/bloc/authentication/auth_bloc.dart';
-import 'package:farm_link/bloc/authentication/auth_event.dart';
-import 'package:farm_link/bloc/authentication/auth_state.dart';
-import 'package:farm_link/bloc/contacts/contacts_bloc.dart';
-import 'package:farm_link/config/pallete.dart';
-import 'package:farm_link/pages/contact_list_page.dart';
-import 'package:farm_link/repository/chat_repository.dart';
-import 'package:farm_link/repository/storage_repository.dart';
-import 'package:farm_link/repository/user_data_repository.dart';
-import 'package:farm_link/utils/shared_objects.dart';
-import 'package:farm_link/view/welcome_view.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'bloc/chat/chat_bloc.dart';
+import './pages/login_page.dart';
+import './pages/registration_page.dart';
+import './pages/home_page.dart';
+import './services/navigation_service.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  SharedObjects.prefs = await CachedSharedPreferences.getInstance();
-  final authBloc = AuthBloc();
-  authBloc.add(AuthEventCheckSession());
-  final UserDataRepository userDataRepository = UserDataRepository();
-  final StorageRepository storageRepository = StorageRepository();
-  final ChatRepository chatRepository = ChatRepository();
-
-  runApp(
-    MultiBlocProvider(
-      providers: [
-        BlocProvider<AuthBloc>.value(value: authBloc),
-        BlocProvider<ChatBloc>(
-          create: (context) => ChatBloc(
-            userDataRepository: userDataRepository,
-            storageRepository: storageRepository,
-            chatRepository: chatRepository,
-          ),
-        ),
-        BlocProvider<ContactsBloc>(
-          create: (BuildContext context) => ContactsBloc(
-              userDataRepository: userDataRepository,
-              chatRepository: chatRepository),
-        ),
-      ],
-      child: const FarmLink(),
-    ),
-  );
+  runApp(MyApp());
 }
 
-class FarmLink extends StatelessWidget {
-  const FarmLink({super.key});
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarIconBrightness: Brightness.dark));
-
     return MaterialApp(
-      title: 'FarmLink',
-      debugShowCheckedModeBanner: false,
+      title: 'Farm Link',
+      navigatorKey: NavigationService.instance.navigatorKey,
       theme: ThemeData(
-        primaryColor: Palette.primaryColor,
-        fontFamily: 'Manrope',
+        brightness: Brightness.dark,
+        primaryColor: const Color.fromARGB(255, 20, 179, 86),
+        scaffoldBackgroundColor: const Color(0xFF1C1B1B),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF2A75BC),
+          secondary: Color(0xFF2A75BC),
+        ),
       ),
-      home: BlocBuilder<AuthBloc, AuthState>(
-        builder: (context, state) {
-          if (state is AuthStateLoggedIn) {
-            return const ContactListPage();
-          } else {
-            return const WelcomeView();
-          }
-        },
-      ),
+      debugShowCheckedModeBanner: false,
+      initialRoute: "login",
+      routes: {
+        "login": (context) => LoginPage(),
+        "register": (context) => BlocProvider<AuthBloc>(
+              create: (_) => AuthBloc(),
+              child: RegistrationPage(),
+            ),
+        "home": (context) => HomePage(),
+      },
     );
   }
 }

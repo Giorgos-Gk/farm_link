@@ -1,158 +1,117 @@
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-
-import '../../config/contacts.dart';
-import '../../utils/shared_objects.dart';
+import 'package:farm_link/services/db_service.dart';
+import 'package:farm_link/services/navigation_service.dart';
+import 'package:farm_link/services/snackbar_service.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  AuthBloc()
-      : super(
-          const AuthStateLoggedOut(
-            isLoading: false,
-            successful: true,
-            error: '',
-          ),
-        ) {
-    on<AuthEventLogin>((event, emit) async {
-      emit(
-        const AuthStateLoggedOut(isLoading: true, successful: true, error: ''),
-      );
-      try {
-        final userCredential = await _auth.signInWithEmailAndPassword(
-          email: event.email,
-          password: event.password,
-        );
-        final user = userCredential.user;
-
-        if (user == null) {
-          throw Exception('User is null after signIn');
-        }
-        await SharedObjects.prefs.setString(Constants.sessionUid, user.uid);
-        emit(const AuthStateLoggedIn(isLoading: false, successful: true));
-        emit(
-          const AuthStateLoggedIn(isLoading: false, successful: true),
-        );
-      } catch (e) {
-        emit(
-          AuthStateLoggedOut(
-            isLoading: false,
-            successful: false,
-            error: e.toString(),
-          ),
-        );
-      }
-    });
-
-    on<AuthEventLogout>((event, emit) async {
-      emit(
-        const AuthStateLoggedOut(isLoading: true, successful: true, error: ''),
-      );
-      await _auth.signOut();
-      emit(
-        const AuthStateLoggedOut(isLoading: false, successful: true, error: ''),
-      );
-    });
-
-    on<AuthEventRegister>((event, emit) async {
-      emit(
-        const AuthStateLoggedOut(isLoading: true, successful: true, error: ''),
-      );
-
-      try {
-        final userCredential = await _auth.createUserWithEmailAndPassword(
-          email: event.email,
-          password: event.password,
-        );
-        final user = userCredential.user;
-        if (user == null) {
-          throw Exception('User creation failed');
-        }
-
-        await SharedObjects.prefs.setString(Constants.sessionUid, user.uid);
-
-        String? imageUrl;
-        if (event.image != null) {
-          final storageRef = FirebaseStorage.instance
-              .ref()
-              .child('profile_images')
-              .child('${user.uid}.png');
-
-          await storageRef.putFile(event.image!);
-          imageUrl = await storageRef.getDownloadURL();
-        }
-
-        await user.updateDisplayName(event.username);
-        if (imageUrl != null) {
-          await user.updatePhotoURL(imageUrl);
-        }
-        await addToUsernameUidMap(event.username, user.uid);
-
-        await _storeUserDataInFirestore(
-          userId: user.uid,
-          username: event.username,
-          email: event.email,
-          imageUrl: imageUrl,
-        );
-
-        emit(const AuthStateLoggedIn(isLoading: false, successful: true));
-      } catch (e) {
-        emit(
-          AuthStateLoggedOut(
-            isLoading: false,
-            successful: false,
-            error: e.toString(),
-          ),
-        );
-      }
-    });
-
-    on<AuthEventCheckSession>((event, emit) {
-      final user = _auth.currentUser;
-      if (user != null) {
-        emit(const AuthStateLoggedIn(isLoading: false, successful: true));
-      } else {
-        emit(
-          const AuthStateLoggedOut(
-            isLoading: false,
-            successful: true,
-            error: '',
-          ),
-        );
-      }
-    });
-  }
-  Future<void> addToUsernameUidMap(String username, String uid) async {
-    await FirebaseFirestore.instance
-        .collection('username_uid_map')
-        .doc(username)
-        .set({'uid': uid});
+  AuthBloc() : super(const UnAuthenticated()) {
+    on<AuthEventLogin>(_onLogin);
+    on<AuthEventRegister>(_onRegister);
+    on<AuthEventLogout>(_onLogout);
+    on<AuthEventCheckSession>(_onCheckSession);
   }
 
-  Future<void> _storeUserDataInFirestore({
-    required String userId,
-    required String username,
-    required String email,
-    String? imageUrl,
-  }) async {
+  Future<void> _onLogin(AuthEventLogin event, Emitter<AuthState> emit) async {
+    emit(
+        const AuthStateLoggedOut(isLoading: true, successful: true, error: ''));
     try {
-      final docRef = FirebaseFirestore.instance.collection('users').doc(userId);
-
-      await docRef.set({
-        'uid': userId,
-        'username': username,
-        'email': email,
-        'image_url': imageUrl ?? '',
-        'contacts': [],
-        'created_at': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: event.email,
+        password: event.password,
+      );
+      final user = userCredential.user;
+      if (user == null) {
+        throw Exception("User is null after sign in");
+      }
+      await DBService.instance.updateUserLastSeenTime(user.uid);
+      SnackBarService.instance.showSnackBarSuccess("Welcome, ${user.email}");
+      NavigationService.instance.navigateToReplacement("home");
+      emit(const AuthStateLoggedIn(isLoading: false, successful: true));
     } catch (e) {
-      throw Exception('Failed to store user data in Firestore: $e');
+      SnackBarService.instance
+          .showSnackBarError("Error Authenticating: ${e.toString()}");
+      emit(AuthStateLoggedOut(
+          isLoading: false, successful: false, error: e.toString()));
+    }
+  }
+
+  Future<void> _onRegister(
+      AuthEventRegister event, Emitter<AuthState> emit) async {
+    emit(
+        const AuthStateLoggedOut(isLoading: true, successful: true, error: ''));
+    try {
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: event.email,
+        password: event.password,
+      );
+      final user = userCredential.user;
+      if (user == null) {
+        throw Exception("User creation failed");
+      }
+      // Αν υπάρχει εικόνα, ανεβάζουμε την εικόνα στο Firebase Storage
+      String? imageUrl;
+      if (event.image != null) {
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child('profile_images')
+            .child('${user.uid}.png');
+        await storageRef.putFile(event.image!);
+        imageUrl = await storageRef.getDownloadURL();
+      }
+
+      // Ενημέρωση του profile στο Firebase Authentication
+      await user.updateDisplayName(event.username);
+      if (imageUrl != null) {
+        await user.updatePhotoURL(imageUrl);
+      }
+      await DBService.instance.createUserInDB(
+        user.uid,
+        event.username,
+        event.email,
+        imageUrl ?? "assets/user.png",
+      );
+      await DBService.instance.updateUserLastSeenTime(user.uid);
+
+      SnackBarService.instance.showSnackBarSuccess("Welcome, ${user.email}");
+      NavigationService.instance.navigateToReplacement("home");
+      emit(const AuthStateLoggedIn(isLoading: false, successful: true));
+    } catch (e) {
+      SnackBarService.instance
+          .showSnackBarError("Error Registering User: ${e.toString()}");
+      emit(AuthStateLoggedOut(
+          isLoading: false, successful: false, error: e.toString()));
+    }
+  }
+
+  Future<void> _onLogout(AuthEventLogout event, Emitter<AuthState> emit) async {
+    emit(
+        const AuthStateLoggedOut(isLoading: true, successful: true, error: ''));
+    try {
+      await _auth.signOut();
+      SnackBarService.instance.showSnackBarSuccess("Logged Out Successfully!");
+      NavigationService.instance.navigateToReplacement("login");
+      emit(const UnAuthenticated());
+    } catch (e) {
+      SnackBarService.instance
+          .showSnackBarError("Error Logging Out: ${e.toString()}");
+      emit(AuthStateLoggedOut(
+          isLoading: false, successful: false, error: e.toString()));
+    }
+  }
+
+  Future<void> _onCheckSession(
+      AuthEventCheckSession event, Emitter<AuthState> emit) async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      emit(const AuthStateLoggedIn(isLoading: false, successful: true));
+    } else {
+      emit(const UnAuthenticated());
     }
   }
 }
