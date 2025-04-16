@@ -1,11 +1,12 @@
-import 'package:farm_link/bloc/authentication/auth_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:farm_link/pages/login_page.dart';
+import 'package:farm_link/pages/registration_page.dart';
+import 'package:farm_link/pages/home_page.dart';
+import 'package:farm_link/services/navigation_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import './pages/login_page.dart';
-import './pages/registration_page.dart';
-import './pages/home_page.dart';
-import './services/navigation_service.dart';
+import 'package:farm_link/bloc/authentication/auth_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +17,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final bool isLoggedIn = FirebaseAuth.instance.currentUser != null;
     return MaterialApp(
       title: 'Farm Link',
       navigatorKey: NavigationService.instance.navigatorKey,
@@ -29,7 +31,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: "login",
+      initialRoute: isLoggedIn ? "home" : "login",
       routes: {
         "login": (context) => LoginPage(),
         "register": (context) => BlocProvider<AuthBloc>(

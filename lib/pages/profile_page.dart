@@ -51,9 +51,9 @@ class ProfilePage extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                    _userImageWidget(_userData.image ?? ""),
-                    _userNameWidget(_userData.name ?? "Unknown"),
-                    _userEmailWidget(_userData.email ?? "Unknown"),
+                    _userImageWidget(_userData.image),
+                    _userNameWidget(_userData.name),
+                    _userEmailWidget(_userData.email),
                     _logoutButton(auth),
                   ],
                 ),

@@ -90,7 +90,7 @@ class RecentConversationsPage extends StatelessWidget {
                 : const Align(
                     alignment: Alignment.center,
                     child: Text(
-                      "No Conversations Yet!",
+                      "Δεν υπαρχουν μηνυματα",
                       style: TextStyle(color: Colors.white30, fontSize: 15.0),
                     ),
                   );
@@ -106,7 +106,7 @@ class RecentConversationsPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: <Widget>[
         const Text(
-          "Last Message",
+          "Τελευταίο μήνυμα",
           style: TextStyle(fontSize: 15),
         ),
         Text(

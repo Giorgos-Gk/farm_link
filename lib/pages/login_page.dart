@@ -103,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
       onSaved: (_input) => setState(() => _email = _input ?? ""),
       cursorColor: Colors.white,
       decoration: const InputDecoration(
-        hintText: " Διεύθυνση ηλεκτρονικού ταχυδρομείου",
+        hintText: "Email",
         focusedBorder:
             UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
       ),

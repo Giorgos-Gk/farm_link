@@ -132,10 +132,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
       style: const TextStyle(color: Colors.white),
       validator: (input) => (input != null && input.contains("@"))
           ? null
-          : "Παρακαλώ εισάγετε μια έγκυρη διεύθυνση ηλεκτρονικού ταχυδρομείου.",
+          : "Παρακαλώ εισάγετε email.",
       onSaved: (input) => _email = input ?? "",
       decoration: const InputDecoration(
-          labelText: "Διεύθυνση ηλεκτρονικού ταχυδρομείου"),
+          labelText: "Email", prefixIcon: Icon(Icons.email)),
     );
   }
 
