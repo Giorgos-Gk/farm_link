@@ -22,6 +22,11 @@ class AuthProvider extends ChangeNotifier {
   static final AuthProvider instance = AuthProvider();
 
   AuthProvider() {
+    user = _auth.currentUser;
+    if (user != null) {
+      status = AuthStatus.Authenticated;
+      notifyListeners();
+    }
     _checkCurrentUserIsAuthenticated();
   }
 

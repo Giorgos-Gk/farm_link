@@ -134,8 +134,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           ? null
           : "Παρακαλώ εισάγετε email.",
       onSaved: (input) => _email = input ?? "",
-      decoration: const InputDecoration(
-          labelText: "Email", prefixIcon: Icon(Icons.email)),
+      decoration: const InputDecoration(labelText: "Email"),
     );
   }
 

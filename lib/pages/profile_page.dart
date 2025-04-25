@@ -1,8 +1,6 @@
-import 'package:farm_link/provider/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-
+import 'package:farm_link/provider/auth_provider.dart';
 import '../services/db_service.dart';
 import '../models/contact.dart';
 
@@ -10,7 +8,7 @@ class ProfilePage extends StatelessWidget {
   final double _height;
   final double _width;
 
-  ProfilePage(this._height, this._width);
+  const ProfilePage(this._height, this._width, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,76 +16,79 @@ class ProfilePage extends StatelessWidget {
       color: Theme.of(context).scaffoldBackgroundColor,
       height: _height,
       width: _width,
-      child: ChangeNotifierProvider(
-        create: (context) => AuthProvider(),
-        child: _profilePageUI(),
-      ),
-    );
-  }
-
-  Widget _profilePageUI() {
-    return Consumer<AuthProvider>(
-      builder: (context, auth, child) {
-        if (auth.user == null) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        return StreamBuilder<Contact>(
-          stream: DBService.instance.getUserData(auth.user!.uid),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData || snapshot.data == null) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+      child: ChangeNotifierProvider<AuthProvider>(
+        create: (_) => AuthProvider(),
+        child: Consumer<AuthProvider>(
+          builder: (context, auth, _) {
+            // Αν δεν υπάρχει user, εμφάνιση loader
+            if (auth.user == null) {
+              return const Center(child: CircularProgressIndicator());
             }
 
-            var _userData = snapshot.data!;
-            return Align(
-              alignment: Alignment.center,
-              child: SizedBox(
-                height: _height * 0.50,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    _userImageWidget(_userData.image),
-                    _userNameWidget(_userData.name),
-                    _userEmailWidget(_userData.email),
-                    _logoutButton(auth),
-                  ],
-                ),
-              ),
+            // StreamBuilder για τα δεδομένα του χρήστη
+            return StreamBuilder<Contact>(
+              stream: DBService.instance.getUserData(auth.user!.uid),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(child: Text('Σφάλμα: ${snapshot.error}'));
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData) {
+                  return const Center(child: Text('Δεν βρέθηκαν δεδομένα'));
+                }
+
+                final userData = snapshot.data!;
+                return Align(
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    height: _height * 0.5,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        _userImageWidget(userData.image),
+                        _userNameWidget(userData.name),
+                        _userEmailWidget(userData.email),
+                        _logoutButton(auth),
+                      ],
+                    ),
+                  ),
+                );
+              },
             );
           },
-        );
-      },
-    );
-  }
-
-  Widget _userImageWidget(String image) {
-    double _imageRadius = _height * 0.20;
-    return Container(
-      height: _imageRadius,
-      width: _imageRadius,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(_imageRadius),
-        image: DecorationImage(
-          fit: BoxFit.cover,
-          image: image.isNotEmpty
-              ? NetworkImage(image)
-              : const AssetImage("assets/default_user.png") as ImageProvider,
         ),
       ),
     );
   }
 
-  Widget _userNameWidget(String userName) {
+  Widget _userImageWidget(String image) {
+    final double radius = _height * 0.2;
+    // Αν το string είναι URL (ξεκινάει με http), κάνε NetworkImage,
+    // αλλιώς AssetImage
+    final provider = (image.startsWith('http'))
+        ? NetworkImage(image)
+        : const AssetImage('assets/user.png') as ImageProvider;
+    return Container(
+      height: radius,
+      width: radius,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(radius),
+        image: DecorationImage(
+          fit: BoxFit.cover,
+          image: provider,
+        ),
+      ),
+    );
+  }
+
+  Widget _userNameWidget(String name) {
     return SizedBox(
       height: _height * 0.05,
       width: _width,
       child: Text(
-        userName,
+        name,
         textAlign: TextAlign.center,
         style: const TextStyle(color: Colors.white, fontSize: 30),
       ),
@@ -109,16 +110,16 @@ class ProfilePage extends StatelessWidget {
   Widget _logoutButton(AuthProvider auth) {
     return SizedBox(
       height: _height * 0.06,
-      width: _width * 0.80,
+      width: _width * 0.8,
       child: ElevatedButton(
         onPressed: () async {
-          // ✅ Κάνουμε το callback async
           await auth.logoutUser(() async {});
         },
         style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
         child: const Text(
-          "LOGOUT",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          'AΠΟΣΥΝΔΕΣΗ',
+          style: TextStyle(
+              fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white60),
         ),
       ),
     );

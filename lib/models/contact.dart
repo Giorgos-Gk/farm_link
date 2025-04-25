@@ -17,13 +17,13 @@ class Contact {
 
   factory Contact.fromFirestore(
       DocumentSnapshot<Map<String, dynamic>> snapshot) {
-    var data = snapshot.data()!;
+    final data = snapshot.data();
     return Contact(
       id: snapshot.id,
-      lastSeen: data["lastSeen"] ?? Timestamp.now(),
-      email: data["email"] ?? "Unknown",
-      name: data["name"] ?? "Unknown",
-      image: data["image"] ?? "",
+      lastSeen: (data?['lastSeen'] as Timestamp?) ?? Timestamp.now(),
+      email: (data?['email'] as String?) ?? 'Unknown',
+      name: (data?['name'] as String?) ?? 'Unknown',
+      image: (data?['image'] as String?) ?? '',
     );
   }
 }
