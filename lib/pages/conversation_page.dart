@@ -217,11 +217,12 @@ class _ConversationPageState extends State<ConversationPage> {
   Widget _messageTextField() {
     return Expanded(
       child: TextFormField(
-        validator: (input) => input!.isEmpty ? "Please enter a message" : null,
+        validator: (input) =>
+            input!.isEmpty ? "Παρακαλώ γράψτε ενα μήνυμα" : null,
         onSaved: (input) => setState(() => _messageText = input!),
         cursorColor: Colors.white,
         decoration: const InputDecoration(
-            border: InputBorder.none, hintText: "Type a message"),
+            border: InputBorder.none, hintText: "Γράψτε εδω..."),
         autocorrect: false,
       ),
     );
