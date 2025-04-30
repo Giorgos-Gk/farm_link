@@ -1,14 +1,14 @@
-import 'package:farm_link/provider/auth_provider.dart';
+import 'package:farm_link/services/cloud_storage_service.dart';
+import 'package:farm_link/services/media_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:provider/provider.dart';
-import '../services/db_service.dart';
-import '../services/media_service.dart';
-import '../services/cloud_storage_service.dart';
 import '../models/conversation.dart';
 import '../models/message.dart';
+import '../services/db_service.dart';
+import 'package:farm_link/provider/auth_provider.dart';
 
 class ConversationPage extends StatefulWidget {
   final String conversationID;
@@ -25,16 +25,13 @@ class ConversationPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() {
-    return _ConversationPageState();
-  }
+  State<ConversationPage> createState() => _ConversationPageState();
 }
 
 class _ConversationPageState extends State<ConversationPage> {
-  late double _deviceHeight;
-  late double _deviceWidth;
+  late double _deviceHeight, _deviceWidth;
+  final _listViewController = ScrollController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final ScrollController _listViewController = ScrollController();
   late AuthProvider _auth;
   String _messageText = "";
 
@@ -45,71 +42,58 @@ class _ConversationPageState extends State<ConversationPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color.fromRGBO(31, 31, 31, 1.0),
+        backgroundColor: const Color.fromRGBO(31, 31, 31, 1),
         title: Text(widget.receiverName),
       ),
       body: ChangeNotifierProvider<AuthProvider>.value(
         value: AuthProvider.instance,
-        child: _conversationPageUI(),
+        child: Consumer<AuthProvider>(
+          builder: (context, auth, _) {
+            _auth = auth;
+            return Stack(
+              children: [
+                _messageListView(),
+                Align(
+                    alignment: Alignment.bottomCenter, child: _messageField()),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _conversationPageUI() {
-    return Consumer<AuthProvider>(
-      builder: (context, auth, child) {
-        _auth = auth;
-        return Stack(
-          children: <Widget>[
-            _messageListView(),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: _messageField(),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Widget _messageListView() {
-    return Container(
-      height: _deviceHeight * 0.75,
+    return SizedBox(
+      height: _deviceHeight * .75,
       width: _deviceWidth,
       child: StreamBuilder<Conversation>(
         stream: DBService.instance.getConversation(widget.conversationID),
-        builder: (context, snapshot) {
+        builder: (ctx, snap) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (_listViewController.hasClients) {
-              _listViewController
-                  .jumpTo(_listViewController.position.maxScrollExtent);
+              _listViewController.jumpTo(
+                _listViewController.position.maxScrollExtent,
+              );
             }
           });
-
-          if (!snapshot.hasData) {
+          if (!snap.hasData) {
             return const Center(
-              child: SpinKitWanderingCubes(
-                color: Colors.blue,
-                size: 50.0,
-              ),
+              child: SpinKitWanderingCubes(color: Colors.blue, size: 50),
             );
           }
-
-          var conversationData = snapshot.data!;
-          if (conversationData.messages.isEmpty) {
-            return const Center(
-              child: Text("Ας ξεκιμησουμε μια συζητηση!"),
-            );
+          final conv = snap.data!;
+          if (conv.messages.isEmpty) {
+            return const Center(child: Text("Ας ξεκινήσουμε μια συζήτηση!"));
           }
-
           return ListView.builder(
             controller: _listViewController,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-            itemCount: conversationData.messages.length,
-            itemBuilder: (context, index) {
-              var message = conversationData.messages[index];
-              bool isOwnMessage = message.senderID == _auth.user?.uid;
-              return _messageListViewChild(isOwnMessage, message);
+            itemCount: conv.messages.length,
+            itemBuilder: (ctx, i) {
+              final msg = conv.messages[i];
+              final isOwn = msg.senderID == _auth.user?.uid;
+              return _messageListViewChild(isOwn, msg);
             },
           );
         },
@@ -117,31 +101,29 @@ class _ConversationPageState extends State<ConversationPage> {
     );
   }
 
-  Widget _messageListViewChild(bool isOwnMessage, Message message) {
+  Widget _messageListViewChild(bool isOwn, Message msg) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment:
-            isOwnMessage ? MainAxisAlignment.end : MainAxisAlignment.start,
-        children: <Widget>[
-          if (!isOwnMessage) _userImageWidget(),
-          SizedBox(width: _deviceWidth * 0.02),
-          message.type == MessageType.Text
-              ? _textMessageBubble(
-                  isOwnMessage, message.content, message.timestamp)
-              : _imageMessageBubble(
-                  isOwnMessage, message.content, message.timestamp),
+            isOwn ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isOwn) _userImageWidget(),
+          SizedBox(width: _deviceWidth * .02),
+          msg.type == MessageType.Text
+              ? _textMessageBubble(isOwn, msg.content, msg.timestamp)
+              : _imageMessageBubble(isOwn, msg.content, msg.timestamp),
         ],
       ),
     );
   }
 
   Widget _userImageWidget() {
-    double imageRadius = _deviceHeight * 0.05;
+    final size = _deviceHeight * .05;
     return Container(
-      height: imageRadius,
-      width: imageRadius,
+      height: size,
+      width: size,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(500),
         image: DecorationImage(
@@ -152,45 +134,57 @@ class _ConversationPageState extends State<ConversationPage> {
     );
   }
 
-  Widget _textMessageBubble(
-      bool isOwnMessage, String message, Timestamp timestamp) {
-    List<Color> colorScheme = isOwnMessage
+  Widget _textMessageBubble(bool isOwn, String text, Timestamp ts) {
+    final colors = isOwn
         ? [Colors.blue, const Color.fromRGBO(42, 117, 188, 1)]
         : [
             const Color.fromRGBO(69, 69, 69, 1),
             const Color.fromRGBO(43, 43, 43, 1)
           ];
-
     return Container(
-      width: _deviceWidth * 0.75,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      width: _deviceWidth * .75,
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        gradient: LinearGradient(colors: colorScheme),
+        gradient: LinearGradient(colors: colors),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(message),
+        children: [
+          Text(text),
+          const SizedBox(height: 4),
           Text(
-            timeago.format(timestamp.toDate()),
-            style: const TextStyle(color: Colors.white70),
+            timeago.format(ts.toDate()),
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
           ),
         ],
       ),
     );
   }
 
-  Widget _imageMessageBubble(
-      bool isOwnMessage, String imageURL, Timestamp timestamp) {
+  Widget _imageMessageBubble(bool isOwn, String url, Timestamp ts) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Image.network(imageURL,
-            width: _deviceWidth * 0.40, height: _deviceHeight * 0.30),
+      children: [
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ImagePreviewPage(imageUrl: url),
+              ),
+            );
+          },
+          child: Image.network(
+            url,
+            width: _deviceWidth * .4,
+            height: _deviceHeight * .3,
+          ),
+        ),
+        const SizedBox(height: 4),
         Text(
-          timeago.format(timestamp.toDate()),
-          style: const TextStyle(color: Colors.white70),
+          timeago.format(ts.toDate()),
+          style: const TextStyle(color: Colors.white70, fontSize: 12),
         ),
       ],
     );
@@ -198,77 +192,81 @@ class _ConversationPageState extends State<ConversationPage> {
 
   Widget _messageField() {
     return Container(
-      height: _deviceHeight * 0.08,
+      height: _deviceHeight * .08,
       margin: EdgeInsets.symmetric(
-          horizontal: _deviceWidth * 0.04, vertical: _deviceHeight * 0.03),
+        horizontal: _deviceWidth * .04,
+        vertical: _deviceHeight * .03,
+      ),
       child: Form(
         key: _formKey,
-        child: Row(
-          children: <Widget>[
-            _messageTextField(),
-            _sendMessageButton(),
-            _imageMessageButton(),
-          ],
+        child: Row(children: [
+          Expanded(
+            child: TextFormField(
+              validator: (v) =>
+                  v!.isEmpty ? "Παρακαλώ γράψτε ένα μήνυμα" : null,
+              onSaved: (v) => setState(() => _messageText = v!),
+              decoration: const InputDecoration(
+                  border: InputBorder.none, hintText: "Γράψτε εδώ..."),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.send, color: Colors.white),
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                _formKey.currentState!.save();
+                DBService.instance.sendMessage(
+                  widget.conversationID,
+                  Message(
+                    content: _messageText,
+                    timestamp: Timestamp.now(),
+                    senderID: _auth.user!.uid,
+                    type: MessageType.Text,
+                  ),
+                );
+                _formKey.currentState!.reset();
+                FocusScope.of(context).unfocus();
+              }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.camera_alt),
+            onPressed: () async {
+              final img = await MediaService.instance.getImageFromLibrary();
+              if (img != null) {
+                final url = await CloudStorageService.instance
+                    .uploadMediaMessage(_auth.user!.uid, img);
+                await DBService.instance.sendMessage(
+                  widget.conversationID,
+                  Message(
+                    content: url!,
+                    timestamp: Timestamp.now(),
+                    senderID: _auth.user!.uid,
+                    type: MessageType.Image,
+                  ),
+                );
+              }
+            },
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
+class ImagePreviewPage extends StatelessWidget {
+  final String imageUrl;
+  const ImagePreviewPage({Key? key, required this.imageUrl}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(backgroundColor: Colors.transparent),
+      body: Center(
+        child: InteractiveViewer(
+          child: Image.network(imageUrl),
         ),
       ),
-    );
-  }
-
-  Widget _messageTextField() {
-    return Expanded(
-      child: TextFormField(
-        validator: (input) =>
-            input!.isEmpty ? "Παρακαλώ γράψτε ενα μήνυμα" : null,
-        onSaved: (input) => setState(() => _messageText = input!),
-        cursorColor: Colors.white,
-        decoration: const InputDecoration(
-            border: InputBorder.none, hintText: "Γράψτε εδω..."),
-        autocorrect: false,
-      ),
-    );
-  }
-
-  Widget _sendMessageButton() {
-    return IconButton(
-      icon: const Icon(Icons.send, color: Colors.white),
-      onPressed: () {
-        if (_formKey.currentState!.validate()) {
-          _formKey.currentState!.save();
-          DBService.instance.sendMessage(
-            widget.conversationID,
-            Message(
-              content: _messageText,
-              timestamp: Timestamp.now(),
-              senderID: _auth.user!.uid, // Χρήση του ! για non-null uid
-              type: MessageType.Text,
-            ),
-          );
-          _formKey.currentState!.reset();
-          FocusScope.of(context).unfocus();
-        }
-      },
-    );
-  }
-
-  Widget _imageMessageButton() {
-    return IconButton(
-      icon: const Icon(Icons.camera_alt),
-      onPressed: () async {
-        var image = await MediaService.instance.getImageFromLibrary();
-        if (image != null) {
-          var imageURL = await CloudStorageService.instance
-              .uploadMediaMessage(_auth.user!.uid, image);
-          await DBService.instance.sendMessage(
-            widget.conversationID,
-            Message(
-              content: imageURL!,
-              senderID: _auth.user!.uid,
-              timestamp: Timestamp.now(),
-              type: MessageType.Image,
-            ),
-          );
-        }
-      },
     );
   }
 }
