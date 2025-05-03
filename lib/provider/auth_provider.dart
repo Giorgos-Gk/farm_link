@@ -1,6 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:firebase_messaging/firebase_messaging.dart';
 import '../services/snackbar_service.dart';
 import '../services/navigation_service.dart';
 import '../services/db_service.dart';
@@ -57,7 +58,9 @@ class AuthProvider extends ChangeNotifier {
           email: email, password: password);
       user = _result.user;
       status = AuthStatus.Authenticated;
-      SnackBarService.instance.showSnackBarSuccess("Welcome, ${user?.email}");
+      await _saveFcmToken(user!.uid);
+      SnackBarService.instance
+          .showSnackBarSuccess("Καλώς ήρθατε, ${user?.email}");
       _autoLogin();
     } catch (e) {
       status = AuthStatus.Error;
@@ -77,10 +80,10 @@ class AuthProvider extends ChangeNotifier {
           email: email, password: password);
       user = _result.user;
       status = AuthStatus.Authenticated;
+      await _saveFcmToken(user!.uid);
       await onSuccess(user!.uid);
       SnackBarService.instance.showSnackBarSuccess("Welcome, ${user?.email}");
       await DBService.instance.updateUserLastSeenTime(user!.uid);
-      // NavigationService.instance.goBack();
       NavigationService.instance.navigateToReplacement("home");
     } catch (e) {
       status = AuthStatus.Error;
@@ -89,6 +92,16 @@ class AuthProvider extends ChangeNotifier {
           .showSnackBarError("Error Registering User: ${e.toString()}");
     }
     notifyListeners();
+  }
+
+  Future<void> _saveFcmToken(String uid) async {
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token != null) {
+      await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(uid)
+          .update({'fcmToken': token});
+    }
   }
 
   Future<void> logoutUser(Future<void> Function() onSuccess) async {

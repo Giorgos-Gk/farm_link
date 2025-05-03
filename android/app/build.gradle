@@ -30,11 +30,12 @@ if (flutterVersionName == null) {
 
 android {
     namespace = "com.tei.farmlink.farm_link"
-    compileSdk = 34
+    compileSdk = 35
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+         coreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -44,7 +45,7 @@ android {
     defaultConfig {
         applicationId = "com.tei.farmlink.farm_link"
         minSdk = 23
-        targetSdk = 33
+        targetSdk = 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
@@ -69,6 +70,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.android.gms:play-services-auth'
     implementation 'com.google.android.gms:play-services-base:18.1.0'
+        coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
 }
 
 apply plugin: 'com.google.gms.google-services' 

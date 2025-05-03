@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:farm_link/pages/login_page.dart';
 import 'package:farm_link/pages/home_page.dart';
 import 'package:farm_link/pages/registration_page.dart';
@@ -8,9 +10,40 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:farm_link/bloc/authentication/auth_bloc.dart';
 import 'package:farm_link/services/navigation_service.dart';
 
+final FlutterLocalNotificationsPlugin _localNotifications =
+    FlutterLocalNotificationsPlugin();
+
+Future<void> _setupNotifications() async {
+  await FirebaseMessaging.instance.requestPermission();
+  const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+  await _localNotifications.initialize(
+    const InitializationSettings(android: androidSettings),
+  );
+  FirebaseMessaging.onMessage.listen((RemoteMessage msg) {
+    final notif = msg.notification;
+    if (notif != null) {
+      _localNotifications.show(
+        notif.hashCode,
+        notif.title,
+        notif.body,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            'chat_channel',
+            'Chat Messages',
+            channelDescription: 'Ειδοποιήσεις νέων μηνυμάτων',
+            importance: Importance.max,
+            priority: Priority.high,
+          ),
+        ),
+      );
+    }
+  });
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await _setupNotifications();
   runApp(const FarmLink());
 }
 
@@ -34,13 +67,11 @@ class FarmLink extends StatelessWidget {
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-          // Περιμένουμε το πρώτο event
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(
               body: Center(child: CircularProgressIndicator()),
             );
           }
-          // Αν έχουμε user → home, αλλιώς login
           if (snapshot.hasData && snapshot.data != null) {
             return HomePage();
           }
