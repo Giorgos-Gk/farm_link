@@ -36,6 +36,13 @@ class _ConversationPageState extends State<ConversationPage> {
   String _messageText = "";
 
   @override
+  void initState() {
+    super.initState();
+    timeago.setLocaleMessages('el', timeago.GrMessages());
+    timeago.setDefaultLocale('el');
+  }
+
+  @override
   Widget build(BuildContext context) {
     _deviceHeight = MediaQuery.of(context).size.height;
     _deviceWidth = MediaQuery.of(context).size.width;
@@ -154,7 +161,7 @@ class _ConversationPageState extends State<ConversationPage> {
           Text(text),
           const SizedBox(height: 4),
           Text(
-            timeago.format(ts.toDate()),
+            timeago.format(ts.toDate(), locale: 'el'),
             style: const TextStyle(color: Colors.white70, fontSize: 12),
           ),
         ],
@@ -183,7 +190,7 @@ class _ConversationPageState extends State<ConversationPage> {
         ),
         const SizedBox(height: 4),
         Text(
-          timeago.format(ts.toDate()),
+          timeago.format(ts.toDate(), locale: 'el'),
           style: const TextStyle(color: Colors.white70, fontSize: 12),
         ),
       ],

@@ -6,12 +6,30 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:farm_link/pages/login_page.dart';
 import 'package:farm_link/pages/home_page.dart';
 import 'package:farm_link/pages/registration_page.dart';
+import 'package:farm_link/pages/conversation_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:farm_link/bloc/authentication/auth_bloc.dart';
 import 'package:farm_link/services/navigation_service.dart';
 
 final FlutterLocalNotificationsPlugin _localNotifications =
     FlutterLocalNotificationsPlugin();
+
+void _handleMessageNavigation(RemoteMessage message) {
+  final data = message.data;
+  final convID = data['conversationID'];
+  final senderID = data['senderID'];
+  final senderName = message.notification?.title ?? 'Chat';
+  NavigationService.instance.navigateToRoute(
+    MaterialPageRoute(
+      builder: (_) => ConversationPage(
+        conversationID: convID,
+        receiverID: senderID,
+        receiverName: senderName,
+        receiverImage: '',
+      ),
+    ),
+  );
+}
 
 Future<void> _setupNotifications() async {
   await FirebaseMessaging.instance.requestPermission();
@@ -47,8 +65,24 @@ void main() async {
   runApp(const FarmLink());
 }
 
-class FarmLink extends StatelessWidget {
+class FarmLink extends StatefulWidget {
   const FarmLink({Key? key}) : super(key: key);
+
+  @override
+  State<FarmLink> createState() => _FarmLinkState();
+}
+
+class _FarmLinkState extends State<FarmLink> {
+  @override
+  void initState() {
+    super.initState();
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageNavigation);
+    FirebaseMessaging.instance.getInitialMessage().then((message) {
+      if (message != null) {
+        _handleMessageNavigation(message);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

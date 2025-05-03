@@ -67,7 +67,6 @@ class DBService {
             conversationDoc.data()?["conversationID"] ?? conversationDoc.id;
         return onSuccess(convID);
       } else {
-        // Δημιουργία συνομιλίας στην κύρια συλλογή
         var conversationRef = _db.collection(_conversationsCollection).doc();
         await conversationRef.set({
           "members": [currentID, recipientID],
@@ -75,18 +74,12 @@ class DBService {
           "messages": [],
           "conversationID": conversationRef.id,
         });
-
-        // Ανάκτηση στοιχείων παραλήπτη
         var recipientSnapshot =
             await _db.collection(_userCollection).doc(recipientID).get();
         var recipientData = recipientSnapshot.data() ?? {};
-
-        // Ανάκτηση στοιχείων αποστολέα
         var senderSnapshot =
             await _db.collection(_userCollection).doc(currentID).get();
         var senderData = senderSnapshot.data() ?? {};
-
-        // Δημιουργία pointer για τον αποστολέα
         await currentUserConvRef.doc(recipientID).set({
           "conversationID": conversationRef.id,
           "name": recipientData["name"] ?? "Unknown",
@@ -94,8 +87,6 @@ class DBService {
           "lastMessage": "",
           "timestamp": FieldValue.serverTimestamp(),
         });
-
-        // Δημιουργία pointer για τον παραλήπτη
         var recipientConvRef = _db
             .collection(_userCollection)
             .doc(recipientID)

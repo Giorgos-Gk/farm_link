@@ -54,7 +54,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (user == null) {
         throw Exception("User creation failed");
       }
-      // Αν υπάρχει εικόνα, ανεβάζουμε την εικόνα στο Firebase Storage
       String? imageUrl;
       if (event.image != null) {
         final storageRef = FirebaseStorage.instance
@@ -64,8 +63,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await storageRef.putFile(event.image!);
         imageUrl = await storageRef.getDownloadURL();
       }
-
-      // Ενημέρωση του profile στο Firebase Authentication
       await user.updateDisplayName(event.username);
       if (imageUrl != null) {
         await user.updatePhotoURL(imageUrl);

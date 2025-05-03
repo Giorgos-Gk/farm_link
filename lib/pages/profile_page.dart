@@ -20,12 +20,9 @@ class ProfilePage extends StatelessWidget {
         create: (_) => AuthProvider(),
         child: Consumer<AuthProvider>(
           builder: (context, auth, _) {
-            // Αν δεν υπάρχει user, εμφάνιση loader
             if (auth.user == null) {
               return const Center(child: CircularProgressIndicator());
             }
-
-            // StreamBuilder για τα δεδομένα του χρήστη
             return StreamBuilder<Contact>(
               stream: DBService.instance.getUserData(auth.user!.uid),
               builder: (context, snapshot) {
@@ -65,8 +62,6 @@ class ProfilePage extends StatelessWidget {
 
   Widget _userImageWidget(String image) {
     final double radius = _height * 0.2;
-    // Αν το string είναι URL (ξεκινάει με http), κάνε NetworkImage,
-    // αλλιώς AssetImage
     final provider = (image.startsWith('http'))
         ? NetworkImage(image)
         : const AssetImage('assets/user.png') as ImageProvider;

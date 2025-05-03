@@ -13,16 +13,9 @@ class CloudStorageService {
 
   Future<String?> uploadUserImage(String uid, File image) async {
     try {
-      // Δημιουργία reference για το αρχείο
       Reference storageRef = _storage.ref().child(_profileImages).child(uid);
-
-      // Ανέβασμα αρχείου στο Firebase Storage
       UploadTask uploadTask = storageRef.putFile(image);
-
-      // Περιμένουμε να ολοκληρωθεί το ανέβασμα
       TaskSnapshot snapshot = await uploadTask;
-
-      // Λήψη του URL του αρχείου
       return await snapshot.ref.getDownloadURL();
     } catch (e) {
       print("Error uploading profile image: $e");
@@ -34,22 +27,14 @@ class CloudStorageService {
     try {
       String fileName =
           "${basename(file.path)}_${DateTime.now().millisecondsSinceEpoch}";
-
-      // Δημιουργία reference για το αρχείο
       Reference storageRef = _storage
           .ref()
           .child(_messages)
           .child(uid)
           .child(_images)
           .child(fileName);
-
-      // Ανέβασμα αρχείου στο Firebase Storage
       UploadTask uploadTask = storageRef.putFile(file);
-
-      // Περιμένουμε να ολοκληρωθεί το ανέβασμα
       TaskSnapshot snapshot = await uploadTask;
-
-      // Λήψη του URL του αρχείου
       return await snapshot.ref.getDownloadURL();
     } catch (e) {
       print("Error uploading media message: $e");

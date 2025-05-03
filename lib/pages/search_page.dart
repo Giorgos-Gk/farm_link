@@ -137,7 +137,7 @@ class _SearchPageState extends State<SearchPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: <Widget>[
-                          Text(_isUserActive ? "Ενεργός τώρα" : "Last Seen",
+                          Text(_isUserActive ? "Ενεργός τώρα" : "Eνεργός πριν",
                               style: const TextStyle(fontSize: 15)),
                           _isUserActive
                               ? Container(
