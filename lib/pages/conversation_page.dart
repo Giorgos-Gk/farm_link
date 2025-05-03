@@ -36,13 +36,6 @@ class _ConversationPageState extends State<ConversationPage> {
   String _messageText = "";
 
   @override
-  void initState() {
-    super.initState();
-    timeago.setLocaleMessages('el', timeago.GrMessages());
-    timeago.setDefaultLocale('el');
-  }
-
-  @override
   Widget build(BuildContext context) {
     _deviceHeight = MediaQuery.of(context).size.height;
     _deviceWidth = MediaQuery.of(context).size.width;

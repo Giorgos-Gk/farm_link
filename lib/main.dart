@@ -10,6 +10,7 @@ import 'package:farm_link/pages/conversation_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:farm_link/bloc/authentication/auth_bloc.dart';
 import 'package:farm_link/services/navigation_service.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 final FlutterLocalNotificationsPlugin _localNotifications =
     FlutterLocalNotificationsPlugin();
@@ -61,6 +62,8 @@ Future<void> _setupNotifications() async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  timeago.setLocaleMessages('el', timeago.GrMessages());
+  timeago.setDefaultLocale('el');
   await _setupNotifications();
   runApp(const FarmLink());
 }
