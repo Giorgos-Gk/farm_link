@@ -32,31 +32,78 @@ void _handleMessageNavigation(RemoteMessage message) {
   );
 }
 
+const AndroidNotificationChannel _chatChannel = AndroidNotificationChannel(
+  'chat_channel',
+  'Chat Messages',
+  description: 'Ειδοποιήσεις νέων μηνυμάτων',
+  importance: Importance.high,
+);
+
+@pragma('vm:entry-point') // απαιτείται στο background isolate
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage msg) async {
+  // Εξασφάλισε ότι το plugin έχει γίνει initialize στο background isolate
+  final plugin = FlutterLocalNotificationsPlugin();
+  const init = InitializationSettings(
+    android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+  );
+  await plugin.initialize(init);
+
+  final title = msg.notification?.title ?? msg.data['title'];
+  final body = msg.notification?.body ?? msg.data['body'];
+  final payload = msg.data['conversationID'] ?? '';
+
+  if (title != null || body != null) {
+    await plugin.show(
+      msg.hashCode,
+      title,
+      body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          _chatChannel.id,
+          _chatChannel.name,
+          channelDescription: _chatChannel.description,
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+      payload: payload,
+    );
+  }
+}
+
 Future<void> _setupNotifications() async {
   await FirebaseMessaging.instance.requestPermission();
-  const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+
   await _localNotifications.initialize(
-    const InitializationSettings(android: androidSettings),
-  );
-  FirebaseMessaging.onMessage.listen((RemoteMessage msg) {
-    final notif = msg.notification;
-    if (notif != null) {
-      _localNotifications.show(
-        notif.hashCode,
-        notif.title,
-        notif.body,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            'chat_channel',
-            'Chat Messages',
-            channelDescription: 'Ειδοποιήσεις νέων μηνυμάτων',
-            importance: Importance.max,
-            priority: Priority.high,
+    const InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+    ),
+    onDidReceiveNotificationResponse: (resp) {
+      final convID = resp.payload;
+      if (convID != null && convID.isNotEmpty) {
+        NavigationService.instance.navigateToRoute(
+          MaterialPageRoute(
+            builder: (_) => ConversationPage(
+              conversationID: convID,
+              receiverID: '',
+              receiverName: 'Chat',
+              receiverImage: '',
+            ),
           ),
-        ),
-      );
-    }
-  });
+        );
+      }
+    },
+  );
+
+  // 3) Δημιουργία καναλιού (Android 8+)
+  final androidPlugin =
+      _localNotifications.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+  await androidPlugin?.createNotificationChannel(_chatChannel);
+
+  // 4) iOS: εμφάνιση και στο foreground
+  await FirebaseMessaging.instance
+      .setForegroundNotificationPresentationOptions(alert: true, badge: true);
 }
 
 void main() async {
