@@ -71,7 +71,6 @@ This project uses Firebase for:
 - File storage
 - Backend logic via Cloud Functions
 
-No secrets or API keys are stored in this repository.
 
 ---
 
